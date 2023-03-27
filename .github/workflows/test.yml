@@ -84,6 +84,7 @@ jobs:
       - name: Test
         env:
           RUSTFLAGS: -Ctarget-feature=+atomics,+bulk-memory,+mutable-globals
+          WASM_SERVER_RUNNER_NO_MODULE: 1
         run:
           cargo test --no-fail-fast --target wasm32-unknown-unknown
           -Zbuild-std=panic_abort,std
