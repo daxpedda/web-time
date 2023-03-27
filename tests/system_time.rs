@@ -1,3 +1,5 @@
+#![allow(clippy::semicolon_if_nothing_returned)]
+
 mod util;
 
 use web_time::{Duration, SystemTime};

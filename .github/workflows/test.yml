@@ -72,9 +72,11 @@ jobs:
             ~/.cargo/.crates2.json
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen
+          key: atomic-wasm-bindgen
       - name: Install wasm-bindgen
-        run: cargo install wasm-bindgen-cli
+        run:
+          cargo install wasm-bindgen-cli --git
+          https://github.com/daxpedda/wasm-bindgen --branch despair
       - name: Install Rust
         run: |
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component rust-src

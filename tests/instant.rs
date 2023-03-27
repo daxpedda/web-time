@@ -1,3 +1,8 @@
+#![allow(
+	clippy::semicolon_if_nothing_returned,
+	clippy::unchecked_duration_subtraction
+)]
+
 mod util;
 
 use web_time::{Duration, Instant};
