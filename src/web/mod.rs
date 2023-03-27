@@ -4,7 +4,7 @@ mod instant;
 mod js;
 mod system_time;
 
-pub use std::time::Duration;
+pub use std::time::*;
 
 pub use self::instant::Instant;
 pub use self::system_time::{SystemTime, SystemTimeError};
