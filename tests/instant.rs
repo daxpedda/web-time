@@ -1,4 +1,5 @@
 #![allow(
+	clippy::cognitive_complexity,
 	clippy::semicolon_if_nothing_returned,
 	clippy::unchecked_duration_subtraction
 )]

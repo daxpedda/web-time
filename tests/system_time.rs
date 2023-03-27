@@ -1,4 +1,4 @@
-#![allow(clippy::semicolon_if_nothing_returned)]
+#![allow(clippy::cognitive_complexity, clippy::semicolon_if_nothing_returned)]
 
 mod util;
 
