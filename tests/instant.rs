@@ -1,9 +1,3 @@
-#![allow(
-	clippy::cognitive_complexity,
-	clippy::semicolon_if_nothing_returned,
-	clippy::unchecked_duration_subtraction
-)]
-
 mod util;
 
 use web_time::{Duration, Instant};
@@ -29,6 +23,11 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 		not(any(target_os = "emscripten", target_os = "wasi"))
 	),
 	wasm_bindgen_test::wasm_bindgen_test
+)]
+#[allow(
+	clippy::cognitive_complexity,
+	clippy::semicolon_if_nothing_returned,
+	clippy::unchecked_duration_subtraction
 )]
 async fn test() {
 	// `Instant::duration_since()` success.

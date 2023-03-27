@@ -1,5 +1,3 @@
-#![allow(clippy::cognitive_complexity, clippy::semicolon_if_nothing_returned)]
-
 mod util;
 
 use web_time::{Duration, SystemTime};
@@ -26,6 +24,7 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 	),
 	wasm_bindgen_test::wasm_bindgen_test
 )]
+#[allow(clippy::cognitive_complexity, clippy::semicolon_if_nothing_returned)]
 async fn test() {
 	// `SystemTime::UNIX_EPOCH`.
 	#[allow(clippy::eq_op)]
