@@ -65,6 +65,12 @@ At the point of time this was written the MSRV is 1.56.
 
 See the [CHANGELOG] file for details.
 
+## Attribution
+
+Inspiration was taken from the [instant](https://github.com/sebcrozet/instant/tree/v0.1.12) project.
+
+Additional insight was taken from the [time](https://github.com/time-rs/time/tree/v0.3.20) project.
+
 ## License
 
 Licensed under either of
@@ -73,6 +79,11 @@ Licensed under either of
 - MIT license ([LICENSE-MIT] or <http://opensource.org/licenses/MIT>)
 
 at your option.
+
+### Copyright
+
+A majority of the code and documentation was taken from [`std::time`]. For
+licence information see [#License](https://github.com/rust-lang/rust/tree/1.68.1#license).
 
 ### Contribution
 
