@@ -83,7 +83,7 @@ at your option.
 ### Copyright
 
 A majority of the code and documentation was taken from [`std::time`]. For
-licence information see [#License](https://github.com/rust-lang/rust/tree/1.68.1#license).
+license information see [#License](https://github.com/rust-lang/rust/tree/1.68.1#license).
 
 ### Contribution
 
