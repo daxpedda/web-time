@@ -1,0 +1,30 @@
+[package]
+categories = ["api-bindings", "date-and-time", "wasm"]
+description = "Drop-in replacement for std::time for Wasm in browsers"
+edition = "2021"
+include = ["CHANGELOG.md", "LICENSE-*", "src/**/*"]
+keywords = ["instant", "wasm", "web", "systemtime", "time"]
+license = "MIT OR Apache-2.0"
+name = "web-time"
+repository = "https://github.com/daxpedda/web-time"
+rust-version = "1.56"
+version = "0.1.0"
+
+[lib]
+test = false
+
+[target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi"))))'.dependencies]
+js-sys = "0.3"
+once_cell = { version = "1", default-features = false }
+wasm-bindgen = { version = "0.2", default-features = false }
+
+[target.'cfg(not(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi")))))'.dev-dependencies]
+pollster = { version = "0.3", features = ["macro"] }
+
+[target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi"))))'.dev-dependencies]
+wasm-bindgen-futures = "0.4"
+wasm-bindgen-test = "0.3"
+web-sys = { version = "0.3", features = ["Window"] }
+
+[package.metadata.docs.rs]
+targets = ["wasm32-unknown-unknown"]

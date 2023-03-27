@@ -1,0 +1,43 @@
+name: Format
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  rustfmt:
+    name: Rustfmt
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install nightly Rust
+        run: |
+          rustup toolchain install nightly --profile minimal --component rustfmt --allow-downgrade
+          rustup default nightly
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Rustfmt
+        run: cargo fmt --check
+
+  taplo:
+    name: Taplo
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache Taplo
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/taplo
+          key: taplo
+      - name: Install Taplo
+        run: cargo install taplo-cli
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Taplo
+        run: taplo fmt --check

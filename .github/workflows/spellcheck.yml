@@ -1,0 +1,51 @@
+name: Spellcheck
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  spellcheck:
+    name: Spellcheck
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache cargo-spellcheck
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/cargo-spellcheck
+          key: cargo-spellcheck
+      - name: Install dependencies
+        run: sudo apt install llvm-dev libclang-dev clang
+      - name: Install cargo-spellcheck
+        run: cargo install cargo-spellcheck
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Spellcheck
+        run: cargo spellcheck check -m 1 CHANGELOG.md
+
+  typos:
+    name: Typos
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Cache typos-cli
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/typos
+          key: typos-cli
+      - name: Install typos-cli
+        run: cargo install typos-cli
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Run Typos
+        run: typos

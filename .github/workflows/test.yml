@@ -1,0 +1,116 @@
+name: Test
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  build-test:
+    name: Build & Test
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - { version: 1.56, msrv: true }
+          - { version: stable, msrv: false }
+        target:
+          - ''
+          - --target wasm32-unknown-unknown
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Cache wasm-bindgen
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen-test-runner
+          key: wasm-bindgen
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli
+      - name: Install Rust
+        run: |
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target }}
+          rustup default ${{ matrix.rust.version }}
+      - name: Build
+        run: cargo build ${{ matrix.target }}
+      - name: Documentation
+        run: cargo doc --no-deps ${{ matrix.target }}
+      - name: Test
+        if: matrix.rust.msrv == false
+        run: cargo test --all-targets --no-fail-fast ${{ matrix.target }}
+      - name: Documentation Test
+        if: matrix.rust.msrv == false
+        run: cargo test --doc --no-fail-fast ${{ matrix.target }}
+
+  build-test:
+    name: Atomic Build & Test
+
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: atomic-test
+
+    strategy:
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Cache wasm-bindgen
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen-test-runner
+          key: wasm-bindgen
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli
+      - name: Install Rust
+        run: |
+          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown
+          rustup default nightly
+      - name: Test
+        if: matrix.rust.msrv == false
+        env:
+          RUSTFLAGS: -Ctarget-feature=+atomics,+bulk-memory,+mutable-globals
+        run: cargo test --no-fail-fast --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
+
+  minimal-versions:
+    name: Minimal Versions
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - 1.56
+          - stable
+        target:
+          - ''
+          - --target wasm32-unknown-unknown
+
+    steps:
+      - name: Install Rust
+        run: |
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target }}
+          rustup default ${{ matrix.rust.version }}
+      - name: Install nightly Rust
+        run: rustup toolchain install nightly --profile minimal
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Build
+        working-directory: minimal-versions
+        run: |
+          cargo +nightly update -Z minimal-versions
+          cargo build ${{ matrix.target }}
