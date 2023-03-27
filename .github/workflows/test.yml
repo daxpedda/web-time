@@ -50,7 +50,7 @@ jobs:
         if: matrix.rust.msrv == false
         run: cargo test --doc --no-fail-fast ${{ matrix.target }}
 
-  build-test:
+  atomic-build-test:
     name: Atomic Build & Test
 
     runs-on: ubuntu-latest
