@@ -18,8 +18,8 @@ jobs:
           - { version: 1.56, msrv: true }
           - { version: stable, msrv: false }
         target:
-          - ""
-          - --target wasm32-unknown-unknown
+          - { target: "", native: true }
+          - { target: --target wasm32-unknown-unknown, native: false }
 
     steps:
       - name: Checkout
@@ -37,18 +37,25 @@ jobs:
         run: cargo install wasm-bindgen-cli
       - name: Install Rust
         run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target }}
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
       - name: Build
-        run: cargo build ${{ matrix.target }}
+        run: cargo build ${{ matrix.target.target }}
       - name: Documentation
-        run: cargo doc --no-deps ${{ matrix.target }}
-      - name: Test
+        run: cargo doc --no-deps ${{ matrix.target.target }}
+      - name: Test on Chrome
         if: matrix.rust.msrv == false
-        run: cargo test --all-targets --no-fail-fast ${{ matrix.target }}
+        env:
+          CHROMEDRIVER: chromedriver
+        run: cargo test --all-targets --no-fail-fast ${{ matrix.target.target }}
+      - name: Test on Firefox
+        if: matrix.rust.msrv == false
+        env:
+          GECKODRIVER: geckodriver
+        run: cargo test --all-targets --no-fail-fast ${{ matrix.target.target }}
       - name: Documentation Test
-        if: matrix.rust.msrv == false
-        run: cargo test --doc --no-fail-fast ${{ matrix.target }}
+        if: matrix.rust.msrv == false && matrix.target.native == true
+        run: cargo test --doc --no-fail-fast
 
   atomic-build-test:
     name: Atomic Build & Test
@@ -81,9 +88,14 @@ jobs:
         run: |
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component rust-src
           rustup default nightly
-      - name: Test
+      - name: Test on Chrome
+        env:
+          CHROMEDRIVER: chromedriver
+        run: cargo test --no-fail-fast
+      - name: Test on Firefox
         env:
           WASM_BINDGEN_USE_NO_MODULE: 1
+          GECKODRIVER: geckodriver
         run: cargo test --no-fail-fast
 
   minimal-versions:
