@@ -66,5 +66,4 @@ rustflags = [
 	"-Wunused_import_braces",
 	"-Wunused_lifetimes",
 	"-Wunused_qualifications",
-	"-Wunused_tuple_struct_fields",
 ]

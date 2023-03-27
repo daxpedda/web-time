@@ -18,7 +18,7 @@ jobs:
           - { version: 1.56, msrv: true }
           - { version: stable, msrv: false }
         target:
-          - ''
+          - ""
           - --target wasm32-unknown-unknown
 
     steps:
@@ -37,7 +37,7 @@ jobs:
         run: cargo install wasm-bindgen-cli
       - name: Install Rust
         run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target }}
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target }} --component rust-src
           rustup default ${{ matrix.rust.version }}
       - name: Build
         run: cargo build ${{ matrix.target }}
@@ -83,7 +83,9 @@ jobs:
         if: matrix.rust.msrv == false
         env:
           RUSTFLAGS: -Ctarget-feature=+atomics,+bulk-memory,+mutable-globals
-        run: cargo test --no-fail-fast --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
+        run:
+          cargo test --no-fail-fast --target wasm32-unknown-unknown
+          -Zbuild-std=panic_abort,std
 
   minimal-versions:
     name: Minimal Versions
@@ -97,13 +99,13 @@ jobs:
           - 1.56
           - stable
         target:
-          - ''
+          - ""
           - --target wasm32-unknown-unknown
 
     steps:
       - name: Install Rust
         run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target }}
+          rustup toolchain install ${{ matrix.rust }} --profile minimal ${{ matrix.target }}
           rustup default ${{ matrix.rust.version }}
       - name: Install nightly Rust
         run: rustup toolchain install nightly --profile minimal

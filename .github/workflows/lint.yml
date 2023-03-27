@@ -14,12 +14,14 @@ jobs:
     strategy:
       matrix:
         target:
-          - ""
-          - --target wasm32-unknown-unknown
+          - x86_64-unknown-linux-gnu
+          - wasm32-unknown-unknown
 
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Install Rust
+        run: rustup target add --target ${{ matrix.target }}
       - name: Run Clippy
         run: cargo clippy --all-targets ${{ matrix.target }} -- -D warnings
       - name: Run Rustdoc
