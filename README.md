@@ -3,7 +3,7 @@
 [![Crates.io Version](https://img.shields.io/crates/v/web-time.svg)](https://crates.io/crates/web-time)
 [![Live Build Status](https://img.shields.io/github/checks-status/daxpedda/web-time/main?label=CI)](https://github.com/daxpedda/web-time/actions?query=branch%3Amain)
 [![Docs.rs Documentation](https://img.shields.io/docsrs/web-time)](https://docs.rs/crate/web-time)
-[![Main Documentation](https://img.shields.io/github/actions/workflow/status/daxpedda/web-time/documentation.yml?branch=main)](https://daxpedda.github.io/web-time/web_-_time/index.html)
+[![Main Documentation](https://img.shields.io/github/actions/workflow/status/daxpedda/web-time/documentation.yml?branch=main)](https://daxpedda.github.io/web-time/web_time/index.html)
 
 ## Description
 
