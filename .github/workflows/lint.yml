@@ -26,10 +26,10 @@ jobs:
           - wasm32-unknown-unknown
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Install Rust
         run: rustup target add ${{ matrix.target }}
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Run Clippy
         run:
           cargo clippy --all-targets --target ${{ matrix.target }} -- -D
