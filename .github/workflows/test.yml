@@ -57,13 +57,10 @@ jobs:
         if: matrix.rust.msrv == false && matrix.target.native == true
         run: cargo test --doc --no-fail-fast
 
-  atomic-build-test:
-    name: Atomic Build & Test
+  safari-build-test:
+    name: Build & Test
 
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: atomic-test
+    runs-on: macos-latest
 
     strategy:
       fail-fast: false
@@ -79,7 +76,43 @@ jobs:
             ~/.cargo/.crates2.json
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
-          key: atomic-wasm-bindgen
+          key: macos-wasm-bindgen
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli
+      - name: Install Rust
+        run: rustup target add wasm32-unknown-unknown
+      - name: Test on Safari
+        env:
+          SAFARIDRIVER: safaridriver
+        run: cargo test --all-targets --no-fail-fast ${{ matrix.target.target }}
+
+  atomic-build-test:
+    name: Atomic Build & Test
+
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: atomic-test
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Cache wasm-bindgen
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen-test-runner
+          key: atomic-${{ matrix.os }}-wasm-bindgen
       - name: Install wasm-bindgen
         run:
           cargo install wasm-bindgen-cli --git
@@ -89,13 +122,20 @@ jobs:
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component rust-src
           rustup default nightly
       - name: Test on Chrome
+        if: matrix.os == ubuntu-latest
         env:
           CHROMEDRIVER: chromedriver
         run: cargo test --no-fail-fast
       - name: Test on Firefox
+        if: matrix.os == ubuntu-latest
         env:
           WASM_BINDGEN_USE_NO_MODULE: 1
           GECKODRIVER: geckodriver
+        run: cargo test --no-fail-fast
+      - name: Test on Safari
+        if: matrix.os == macos-latest
+        env:
+          SAFARIDRIVER: safaridriver
         run: cargo test --no-fail-fast
 
   minimal-versions:
