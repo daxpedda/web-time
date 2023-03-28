@@ -2,10 +2,10 @@
 //!
 //! Complete drop-in replacement for [`std::time`] that works in the browser.
 //!
-//! Currently [`Instant`] and [`SystemTime`] will simply panic when using the
-//! `wasm32-unknown-unknown` target. This implementation uses
-//! [`Performance.now()`] to offer a drop-in replacement that works in the
-//! browser.
+//! Currently [`Instant::now()`] and [`SystemTime::now()`] will simply panic
+//! when using the `wasm32-unknown-unknown` target. This implementation uses
+//! [`Performance.now()`] for [`Instant`] and [`Date.now()`] for [`SystemTime`]
+//! to offer a drop-in replacement that works in the browser.
 //!
 //! At the same time the library will simply re-export [`std::time`] when not
 //! using the `wasm32-unknown-unknown` target and will also not pull in any
@@ -88,8 +88,11 @@
 //! [CHANGELOG]: https://github.com/daxpedda/web-time/blob/v0.1.0/CHANGELOG.md
 //! [LICENSE-MIT]: https://github.com/daxpedda/web-time/blob/v0.1.0/LICENSE-MIT
 //! [LICENSE-APACHE]: https://github.com/daxpedda/web-time/blob/v0.1.0/LICENSE-APACHE
+//! [`Date.now()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
 //! [`Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html
+//! [`Instant::now()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.now
 //! [`SystemTime`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html
+//! [`SystemTime::now()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.now
 //! [`std::time`]: https://doc.rust-lang.org/stable/std/time/
 //! [`performance.now()`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
 //! [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
