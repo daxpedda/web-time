@@ -1,14 +1,14 @@
 //! # Description
 //!
-//! Complete drop-in replacement for [`std::time`] that works in the browser.
+//! Complete drop-in replacement for [`std::time`] that works in browsers.
 //!
 //! Currently [`Instant::now()`] and [`SystemTime::now()`] will simply panic
 //! when using the `wasm32-unknown-unknown` target. This implementation uses
 //! [`Performance.now()`] for [`Instant`] and [`Date.now()`] for [`SystemTime`]
-//! to offer a drop-in replacement that works in the browser.
+//! to offer a drop-in replacement that works in browsers.
 //!
 //! At the same time the library will simply re-export [`std::time`] when not
-//! using the `wasm32-unknown-unknown` target and will also not pull in any
+//! using the `wasm32-unknown-unknown` target and will not pull in any
 //! dependencies.
 //!
 //! Additionally, if compiled with `target-feature = "atomics"` it will
