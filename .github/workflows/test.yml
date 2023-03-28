@@ -107,7 +107,8 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          - macos-latest
+          # Waiting for Safari 16.4 update
+          # - macos-latest
 
     steps:
       - name: Checkout
