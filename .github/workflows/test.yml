@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   build-test:
     name: Build & Test
@@ -22,8 +25,8 @@ jobs:
           - { version: 1.56, msrv: true }
           - { version: stable, msrv: false }
         target:
-          - { target: "", native: true }
-          - { target: --target wasm32-unknown-unknown, native: false }
+          - { target: x86_64-unknown-linux-gnu, native: true }
+          - { target: wasm32-unknown-unknown, native: false }
 
     steps:
       - name: Checkout
@@ -39,35 +42,36 @@ jobs:
           key: wasm-bindgen
       - name: Install wasm-bindgen
         run: cargo install wasm-bindgen-cli
-      - name: Install Rust
+      - name: Install additional Rust targets
         run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
+          rustup target add ${{ matrix.target.target }}
       - name: Build
-        run: cargo build ${{ matrix.target.target }}
+        run: cargo build --target ${{ matrix.target.target }}
       - name: Documentation
-        run: cargo doc --no-deps ${{ matrix.target.target }}
+        run: cargo doc --no-deps --target ${{ matrix.target.target }}
       - name: Test on Chrome
         if: matrix.rust.msrv == false
         env:
           CHROMEDRIVER: chromedriver
-        run: cargo test --all-targets --no-fail-fast ${{ matrix.target.target }}
+        run:
+          cargo test --all-targets --no-fail-fast --target ${{
+          matrix.target.target }}
       - name: Test on Firefox
         if: matrix.rust.msrv == false
         env:
           GECKODRIVER: geckodriver
-        run: cargo test --all-targets --no-fail-fast ${{ matrix.target.target }}
+        run:
+          cargo test --all-targets --no-fail-fast --target ${{
+          matrix.target.target }}
       - name: Documentation Test
         if: matrix.rust.msrv == false && matrix.target.native == true
         run: cargo test --doc --no-fail-fast
 
   safari-build-test:
-    name: Build & Test
+    name: Safari Build & Test
 
     runs-on: macos-latest
-
-    strategy:
-      fail-fast: false
 
     steps:
       - name: Checkout
@@ -83,7 +87,7 @@ jobs:
           key: macos-wasm-bindgen
       - name: Install wasm-bindgen
         run: cargo install wasm-bindgen-cli
-      - name: Install Rust
+      - name: Install additional Rust targets
         run: rustup target add wasm32-unknown-unknown
       - name: Test on Safari
         env:
@@ -121,10 +125,11 @@ jobs:
         run:
           cargo install wasm-bindgen-cli --git
           https://github.com/daxpedda/wasm-bindgen --branch despair
-      - name: Install Rust
+      - name: Install additional Rust targets and components
         run: |
-          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component rust-src
           rustup default nightly
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
       - name: Test on Chrome
         if: matrix.os == 'ubuntu-latest'
         env:
@@ -146,6 +151,9 @@ jobs:
     name: Minimal Versions
 
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: minimal-versions
 
     strategy:
       fail-fast: false
@@ -154,20 +162,17 @@ jobs:
           - 1.56
           - stable
         target:
-          - ""
-          - --target wasm32-unknown-unknown
+          - x86_64-unknown-linux-gnu
+          - wasm32-unknown-unknown
 
     steps:
-      - name: Install Rust
+      - name: Install additional Rust targets
         run: |
-          rustup toolchain install ${{ matrix.rust }} --profile minimal ${{ matrix.target }}
           rustup default ${{ matrix.rust }}
-      - name: Install nightly Rust
-        run: rustup toolchain install nightly --profile minimal
+          rustup target add ${{ matrix.target }}
       - name: Checkout
         uses: actions/checkout@v3
       - name: Build
-        working-directory: minimal-versions
         run: |
           cargo +nightly update -Z minimal-versions
-          cargo build ${{ matrix.target }}
+          cargo build --target ${{ matrix.target }}

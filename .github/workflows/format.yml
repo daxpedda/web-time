@@ -16,14 +16,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install nightly Rust
-        run: |
-          rustup toolchain install nightly --profile minimal --component rustfmt --allow-downgrade
-          rustup default nightly
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run Rustfmt
-        run: cargo fmt --check
+        run: cargo +nightly fmt --check
 
   taplo:
     name: Taplo

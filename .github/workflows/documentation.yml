@@ -13,6 +13,9 @@ concurrency:
   group: "pages"
   cancel-in-progress: true
 
+env:
+  CARGO_TERM_COLOR: always
+
 jobs:
   document-deploy:
     name: Document & Deploy
@@ -24,18 +27,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install nightly Rust
-        run: |
-          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown
-          rustup default nightly
+      - name: Install additional Rust targets
+        run: rustup +nightly target add wasm32-unknown-unknown
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: --crate-version main
         run:
-          cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target
-          wasm32-unknown-unknown
+          cargo +nightly doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples
+          --target wasm32-unknown-unknown
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
