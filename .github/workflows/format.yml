@@ -31,6 +31,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Cache Taplo
         uses: actions/cache@v3
         with:
@@ -41,7 +43,5 @@ jobs:
           key: taplo
       - name: Install Taplo
         run: cargo install taplo-cli
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Run Taplo
         run: taplo fmt --check

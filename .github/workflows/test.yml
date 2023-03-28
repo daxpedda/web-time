@@ -74,6 +74,8 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Cache wasm-bindgen
         uses: actions/cache@v3
         with:
@@ -87,8 +89,6 @@ jobs:
         run: rustup target add wasm32-unknown-unknown
       - name: Install wasm-bindgen
         run: cargo install wasm-bindgen-cli
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Test on Safari
         env:
           SAFARIDRIVER: safaridriver
@@ -111,6 +111,13 @@ jobs:
           # - macos-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install additional Rust targets and components
+        run: |
+          rustup default nightly
+          rustup target add wasm32-unknown-unknown
+          rustup component add rust-src
       - name: Cache wasm-bindgen
         uses: actions/cache@v3
         with:
@@ -120,17 +127,10 @@ jobs:
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
           key: atomic-${{ matrix.os }}-wasm-bindgen
-      - name: Install additional Rust targets and components
-        run: |
-          rustup default nightly
-          rustup target add wasm32-unknown-unknown
-          rustup component add rust-src
       - name: Install wasm-bindgen
         run:
           cargo install wasm-bindgen-cli --git
           https://github.com/daxpedda/wasm-bindgen --branch despair
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Test on Chrome
         if: matrix.os == 'ubuntu-latest'
         env:
@@ -167,14 +167,14 @@ jobs:
           - wasm32-unknown-unknown
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Install additional Rust targets
         run: |
           rustup default ${{ matrix.rust }}
           rustup target add ${{ matrix.target }}
       - name: Install Rust nightly
         run: rustup toolchain install nightly --profile minimal
-      - name: Checkout
-        uses: actions/checkout@v3
       - name: Build
         run: |
           cargo +nightly update -Z minimal-versions

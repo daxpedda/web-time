@@ -27,10 +27,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install additional Rust targets
-        run: rustup +nightly target add wasm32-unknown-unknown
       - name: Checkout
         uses: actions/checkout@v3
+      - name: Install additional Rust targets
+        run: rustup +nightly target add wasm32-unknown-unknown
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: --crate-version main
