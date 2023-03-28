@@ -20,8 +20,8 @@ jobs:
         uses: actions/checkout@v3
       - name: Install dependencies
         run: sudo apt install llvm-dev libclang-dev clang
-      - name: Cache cargo-spellcheck
-        uses: actions/cache@v3
+      - name: Restore cached cargo-spellcheck
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.cargo/.crates.toml
@@ -30,6 +30,14 @@ jobs:
           key: cargo-spellcheck
       - name: Install cargo-spellcheck
         run: cargo install cargo-spellcheck
+      - name: Save cargo-spellcheck to cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/cargo-spellcheck
+          key: cargo-spellcheck
       - name: Run Spellcheck
         run: |
           cargo spellcheck check -m 1
@@ -41,8 +49,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Cache typos-cli
-        uses: actions/cache@v3
+      - name: Restore cached typos-cli
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.cargo/.crates.toml
@@ -51,6 +59,14 @@ jobs:
           key: typos-cli
       - name: Install typos-cli
         run: cargo install typos-cli
+      - name: Save typos-cli to cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/typos
+          key: typos-cli
       - name: Checkout
         uses: actions/checkout@v3
       - name: Run Typos

@@ -31,8 +31,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Cache wasm-bindgen
-        uses: actions/cache@v3
+      - name: Restore cached wasm-bindgen
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.cargo/.crates.toml
@@ -42,6 +42,15 @@ jobs:
           key: wasm-bindgen
       - name: Install wasm-bindgen
         run: cargo install wasm-bindgen-cli
+      - name: Save wasm-bindgen to cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen-test-runner
+          key: wasm-bindgen
       - name: Install additional Rust targets
         run: |
           rustup default ${{ matrix.rust.version }}
@@ -76,8 +85,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Cache wasm-bindgen
-        uses: actions/cache@v3
+      - name: Restore cached wasm-bindgen
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen-test-runner
+          key: macos-wasm-bindgen
+      - name: Install wasm-bindgen
+        run: cargo install wasm-bindgen-cli
+      - name: Save wasm-bindgen to cache
+        uses: actions/cache/save@v3
         with:
           path: |
             ~/.cargo/.crates.toml
@@ -87,8 +107,6 @@ jobs:
           key: macos-wasm-bindgen
       - name: Install additional Rust targets
         run: rustup target add wasm32-unknown-unknown
-      - name: Install wasm-bindgen
-        run: cargo install wasm-bindgen-cli
       - name: Test on Safari
         env:
           SAFARIDRIVER: safaridriver
@@ -118,8 +136,8 @@ jobs:
           rustup default nightly
           rustup target add wasm32-unknown-unknown
           rustup component add rust-src
-      - name: Cache wasm-bindgen
-        uses: actions/cache@v3
+      - name: Restore cached wasm-bindgen
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.cargo/.crates.toml
@@ -131,6 +149,15 @@ jobs:
         run:
           cargo install wasm-bindgen-cli --git
           https://github.com/daxpedda/wasm-bindgen --branch despair
+      - name: Save wasm-bindgen to cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/wasm-bindgen
+            ~/.cargo/bin/wasm-bindgen-test-runner
+          key: atomic-${{ matrix.os }}-wasm-bindgen
       - name: Test on Chrome
         if: matrix.os == 'ubuntu-latest'
         env:

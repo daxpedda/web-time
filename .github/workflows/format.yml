@@ -33,8 +33,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Cache Taplo
-        uses: actions/cache@v3
+      - name: Restore cached Taplo
+        uses: actions/cache/restore@v3
         with:
           path: |
             ~/.cargo/.crates.toml
@@ -43,5 +43,13 @@ jobs:
           key: taplo
       - name: Install Taplo
         run: cargo install taplo-cli
+      - name: Save Taplo to cache
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
+            ~/.cargo/bin/taplo
+          key: taplo
       - name: Run Taplo
         run: taplo fmt --check
