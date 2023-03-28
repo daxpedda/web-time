@@ -126,18 +126,18 @@ jobs:
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component rust-src
           rustup default nightly
       - name: Test on Chrome
-        if: matrix.os == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
         env:
           CHROMEDRIVER: chromedriver
         run: cargo test --no-fail-fast
       - name: Test on Firefox
-        if: matrix.os == "ubuntu-latest"
+        if: matrix.os == 'ubuntu-latest'
         env:
           WASM_BINDGEN_USE_NO_MODULE: 1
           GECKODRIVER: geckodriver
         run: cargo test --no-fail-fast
       - name: Test on Safari
-        if: matrix.os == "macos-latest"
+        if: matrix.os == 'macos-latest'
         env:
           SAFARIDRIVER: safaridriver
         run: cargo test --no-fail-fast
