@@ -16,17 +16,23 @@ jobs:
   build-test:
     name: Build & Test
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
+        os:
+          - ubuntu-latest
         rust:
           - { version: 1.56, msrv: true }
           - { version: stable, msrv: false }
         target:
           - { target: x86_64-unknown-linux-gnu, native: true }
           - { target: wasm32-unknown-unknown, native: false }
+        include:
+          - os: macos-latest
+            rust: { version: stable, msrv: false }
+            target: { target: wasm32-unknown-unknown, native: false }
 
     steps:
       - name: Checkout
@@ -39,7 +45,7 @@ jobs:
             ~/.cargo/.crates2.json
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen
+          key: wasm-bindgen-${{ matrix.os }}
       - name: Install wasm-bindgen
         run: cargo install wasm-bindgen-cli
       - name: Save wasm-bindgen to cache
@@ -50,7 +56,7 @@ jobs:
             ~/.cargo/.crates2.json
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen
+          key: wasm-bindgen-${{ matrix.os }}
       - name: Install additional Rust targets
         run: |
           rustup default ${{ matrix.rust.version }}
@@ -58,59 +64,34 @@ jobs:
       - name: Build
         run: cargo build --target ${{ matrix.target.target }}
       - name: Documentation
+        if: matrix.os == 'ubuntu-latest'
         run: cargo doc --no-deps --target ${{ matrix.target.target }}
       - name: Test on Chrome
-        if: matrix.rust.msrv == false
+        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest'
         env:
           CHROMEDRIVER: chromedriver
         run:
           cargo test --all-targets --no-fail-fast --target ${{
           matrix.target.target }}
       - name: Test on Firefox
-        if: matrix.rust.msrv == false
+        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest'
         env:
           GECKODRIVER: geckodriver
         run:
           cargo test --all-targets --no-fail-fast --target ${{
           matrix.target.target }}
-      - name: Documentation Test
-        if: matrix.rust.msrv == false && matrix.target.native == true
-        run: cargo test --doc --no-fail-fast
-
-  safari-build-test:
-    name: Safari Build & Test
-
-    runs-on: macos-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Restore cached wasm-bindgen
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/wasm-bindgen
-            ~/.cargo/bin/wasm-bindgen-test-runner
-          key: macos-wasm-bindgen
-      - name: Install wasm-bindgen
-        run: cargo install wasm-bindgen-cli
-      - name: Save wasm-bindgen to cache
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/wasm-bindgen
-            ~/.cargo/bin/wasm-bindgen-test-runner
-          key: macos-wasm-bindgen
-      - name: Install additional Rust targets
-        run: rustup target add wasm32-unknown-unknown
       - name: Test on Safari
+        if: matrix.rust.msrv == false && matrix.os == 'macos-latest'
         env:
           SAFARIDRIVER: safaridriver
-        run: cargo test --all-targets --no-fail-fast ${{ matrix.target.target }}
+        run:
+          cargo test --all-targets --no-fail-fast --target ${{
+          matrix.target.target }}
+      - name: Documentation Test
+        if:
+          matrix.rust.msrv == false && matrix.target.native == true && matrix.os
+          == 'ubuntu-latest'
+        run: cargo test --doc --no-fail-fast
 
   atomic-build-test:
     name: Atomic Build & Test
@@ -125,8 +106,7 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
-          # Waiting for Safari 16.4 update
-          # - macos-latest
+          - macos-latest
 
     steps:
       - name: Checkout
@@ -144,7 +124,7 @@ jobs:
             ~/.cargo/.crates2.json
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
-          key: atomic-${{ matrix.os }}-wasm-bindgen
+          key: wasm-bindgen-atomic-${{ matrix.os }}
       - name: Install wasm-bindgen
         run:
           cargo install wasm-bindgen-cli --git
@@ -157,7 +137,7 @@ jobs:
             ~/.cargo/.crates2.json
             ~/.cargo/bin/wasm-bindgen
             ~/.cargo/bin/wasm-bindgen-test-runner
-          key: atomic-${{ matrix.os }}-wasm-bindgen
+          key: wasm-bindgen-atomic-${{ matrix.os }}
       - name: Test on Chrome
         if: matrix.os == 'ubuntu-latest'
         env:
