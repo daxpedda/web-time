@@ -18,23 +18,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Restore cached cargo-audit
-        uses: actions/cache/restore@v3
+      - uses: taiki-e/install-action@v2
         with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/cargo-audit
-          key: cargo-audit
-      - name: Install cargo-audit
-        run: cargo install cargo-audit
-      - name: Save cargo-audit to cache
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/cargo-audit
-          key: cargo-audit
+          tool: cargo-audit
       - name: Run Audit
         run: cargo audit -D warnings

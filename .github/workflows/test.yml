@@ -37,26 +37,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
-      - name: Restore cached wasm-bindgen
-        uses: actions/cache/restore@v3
+      - uses: taiki-e/install-action@v2
         with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/wasm-bindgen
-            ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen-${{ matrix.os }}
-      - name: Install wasm-bindgen
-        run: cargo install wasm-bindgen-cli
-      - name: Save wasm-bindgen to cache
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/wasm-bindgen
-            ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen-${{ matrix.os }}
+          tool: wasm-bindgen-cli
       - name: Install additional Rust targets
         run: |
           rustup default ${{ matrix.rust.version }}
