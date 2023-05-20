@@ -33,6 +33,7 @@ rustflags = [
 	"-Aclippy::equatable_if_let",
 	"-Aclippy::explicit_deref_methods",
 	"-Aclippy::future_not_send",
+	"-Aclippy::let_underscore_untyped",
 	"-Aclippy::module_inception",
 	"-Aclippy::module_name_repetitions",
 	"-Aclippy::option_if_let_else",
