@@ -44,6 +44,7 @@ impl Instant {
 
 	/// See [`std::time::Instant::checked_duration_since()`].
 	#[must_use]
+	#[allow(clippy::missing_const_for_fn)]
 	pub fn checked_duration_since(&self, earlier: Self) -> Option<Duration> {
 		self.0.checked_sub(earlier.0)
 	}

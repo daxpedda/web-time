@@ -48,7 +48,7 @@
 //! # MSRV
 //!
 //! As this library heavily relies on [`wasm-bindgen`] the MSRV depends on it.
-//! At the point of time this was written the MSRV is 1.56.
+//! At the point of time this was written the MSRV is 1.60.
 //!
 //! # Alternatives
 //!

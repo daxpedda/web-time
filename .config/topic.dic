@@ -1,4 +1,4 @@
-10
+11
 Changelog
 CHANGELOG
 Emscripten
@@ -7,5 +7,6 @@ JS
 MDN
 MSRV
 timestamps
+v1
 Versioning
 WASI

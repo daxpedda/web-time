@@ -24,7 +24,7 @@ jobs:
         os:
           - ubuntu-latest
         rust:
-          - { version: 1.56, msrv: true }
+          - { version: "1.60", msrv: true }
           - { version: stable, msrv: false }
         target:
           - { target: x86_64-unknown-linux-gnu, native: true }
@@ -150,7 +150,7 @@ jobs:
       fail-fast: false
       matrix:
         rust:
-          - 1.56
+          - "1.60"
           - stable
         target:
           - x86_64-unknown-linux-gnu

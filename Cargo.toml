@@ -7,7 +7,7 @@ keywords = ["instant", "wasm", "web", "systemtime", "time"]
 license = "MIT OR Apache-2.0"
 name = "web-time"
 repository = "https://github.com/daxpedda/web-time"
-rust-version = "1.56"
+rust-version = "1.60"
 version = "0.2.0"
 
 [lib]
