@@ -39,6 +39,11 @@ jobs:
           --target wasm32-unknown-unknown
       - name: Setup Pages
         uses: actions/configure-pages@v3
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "target/wasm32-unknown-unknown/doc/" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v2
         with:
