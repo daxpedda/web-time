@@ -14,19 +14,3 @@ wasm-bindgen-test = "0.3"
 wasm-worker = { git = "https://github.com/daxpedda/wasm-worker" }
 web-sys = { version = "0.3", features = ["Window", "WorkerGlobalScope"] }
 web-time = { path = "../" }
-
-[patch.crates-io]
-# Fixes related to multi-threaded Wasm and macros.
-# https://github.com/rustwasm/wasm-bindgen/pull/3168
-# https://github.com/rustwasm/wasm-bindgen/pull/3247
-# https://github.com/rustwasm/wasm-bindgen/pull/3279 (merged)
-# https://github.com/rustwasm/wasm-bindgen/pull/3293 (merged)
-# https://github.com/rustwasm/wasm-bindgen/pull/3296
-# https://github.com/rustwasm/wasm-bindgen/pull/3299
-# https://github.com/rustwasm/wasm-bindgen/pull/3302 (merged)
-# https://github.com/rustwasm/wasm-bindgen/pull/3329 (merged)
-# https://github.com/rustwasm/wasm-bindgen/pull/3360
-js-sys = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "despair" }
-wasm-bindgen = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "despair" }
-wasm-bindgen-futures = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "despair" }
-web-sys = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "despair" }

@@ -99,28 +99,9 @@ jobs:
           rustup default nightly
           rustup target add wasm32-unknown-unknown
           rustup component add rust-src
-      - name: Restore cached wasm-bindgen
-        uses: actions/cache/restore@v3
+      - uses: taiki-e/install-action@v2
         with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/wasm-bindgen
-            ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen-atomic-${{ matrix.os }}
-      - name: Install wasm-bindgen
-        run:
-          cargo install wasm-bindgen-cli --git
-          https://github.com/daxpedda/wasm-bindgen --branch despair
-      - name: Save wasm-bindgen to cache
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            ~/.cargo/bin/wasm-bindgen
-            ~/.cargo/bin/wasm-bindgen-test-runner
-          key: wasm-bindgen-atomic-${{ matrix.os }}
+          tool: wasm-bindgen-cli
       - name: Test on Chrome
         if: matrix.os == 'ubuntu-latest'
         env:
@@ -129,7 +110,6 @@ jobs:
       - name: Test on Firefox
         if: matrix.os == 'ubuntu-latest'
         env:
-          WASM_BINDGEN_USE_NO_MODULE: 1
           GECKODRIVER: geckodriver
         run: cargo test --no-fail-fast
       - name: Test on Safari
