@@ -18,6 +18,20 @@ rustup toolchain install nightly --target wasm32-unknown-unknown --component rus
 RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build -Zbuild-std=panic_abort,std --target wasm32-unknown-unknown
 ```
 
+### Rust Analyzer
+
+To get proper diagnostics for Rust Atomics it can be helpful to configure Rust Analyzer to support that.
+
+Here is an example configuration for Visual Studio Code:
+```json
+"rust-analyzer.cargo.target": "wasm32-unknown-unknown",
+"rust-analyzer.cargo.extraArgs": ["-Zbuild-std=panic_abort,std"],
+"rust-analyzer.cargo.extraEnv": {
+    "RUSTUP_TOOLCHAIN": "nightly",
+    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
+},
+```
+
 ## Testing
 
 Tests are run as usual, but tests that require Wasm Atomics can be run like this:
@@ -25,8 +39,9 @@ Tests are run as usual, but tests that require Wasm Atomics can be run like this
 RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly test -Zbuild-std=panic_abort,std --target wasm32-unknown-unknown
 ```
 
-Additionally, keep in mind that usage of [`#[should_panic]`] is known to cause browsers to get stuck because of the lack of unwinding support.
+Additionally, keep in mind that usage of [`#[should_panic]`](`should_panic`) is known to cause browsers to get stuck because of the lack of unwinding support.
+
 The current workaround is to split tests using `await` into separate test targets.
 
 [`build-std`]: https://doc.rust-lang.org/1.73.0/cargo/reference/unstable.html#build-std
-[`#[should_panic]`]: https://doc.rust-lang.org/1.73.0/reference/attributes/testing.html#the-should_panic-attribute
+[`should_panic`]: https://doc.rust-lang.org/1.73.0/reference/attributes/testing.html#the-should_panic-attribute
