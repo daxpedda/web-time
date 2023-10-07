@@ -16,36 +16,46 @@ impl SystemTime {
 	/// See [`std::time::SystemTime::now()`].
 	#[must_use]
 	pub fn now() -> Self {
-		#[allow(clippy::as_conversions)]
+		#[allow(clippy::as_conversions, clippy::cast_possible_truncation)]
 		Self(js_sys::Date::now() as i64)
 	}
 
 	/// See [`std::time::SystemTime::duration_since()`].
-	#[allow(clippy::missing_errors_doc, clippy::missing_panics_doc)]
+	#[allow(
+		clippy::missing_errors_doc,
+		clippy::missing_panics_doc,
+		clippy::trivially_copy_pass_by_ref
+	)]
 	pub fn duration_since(&self, earlier: Self) -> Result<Duration, SystemTimeError> {
 		if self.0 < earlier.0 {
-			let duration = (earlier.0 - self.0).try_into().unwrap();
+			let duration = (earlier.0 - self.0)
+				.try_into()
+				.expect("`self` bigger then `earlier` despite earlier check");
 
 			Err(SystemTimeError(Duration::from_millis(duration)))
 		} else {
-			let duration = (self.0 - earlier.0).try_into().unwrap();
+			let duration = (self.0 - earlier.0)
+				.try_into()
+				.expect("`earlier` bigger then `self` despite earlier check");
 			Ok(Duration::from_millis(duration))
 		}
 	}
 
 	/// See [`std::time::SystemTime::elapsed()`].
-	#[allow(clippy::missing_errors_doc)]
+	#[allow(clippy::missing_errors_doc, clippy::trivially_copy_pass_by_ref)]
 	pub fn elapsed(&self) -> Result<Duration, SystemTimeError> {
 		Self::now().duration_since(*self)
 	}
 
 	/// See [`std::time::SystemTime::checked_add()`].
+	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn checked_add(&self, duration: Duration) -> Option<Self> {
 		let duration = duration.as_millis().try_into().ok()?;
 		self.0.checked_add(duration).map(SystemTime)
 	}
 
 	/// See [`std::time::SystemTime::checked_sub()`].
+	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
 		let duration = duration.as_millis().try_into().ok()?;
 		self.0.checked_sub(duration).map(SystemTime)
@@ -102,8 +112,8 @@ impl SystemTimeError {
 }
 
 impl Display for SystemTimeError {
-	fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-		write!(f, "second time provided was later than self")
+	fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+		write!(formatter, "second time provided was later than self")
 	}
 }
 

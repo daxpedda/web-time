@@ -1,3 +1,6 @@
+#![cfg(test)]
+#![allow(clippy::missing_assert_message)]
+
 mod util;
 
 use web_time::{Duration, SystemTime};

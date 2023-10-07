@@ -29,7 +29,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Rust
-        run: rustup target add ${{ matrix.target }}
+        run:
+          rustup toolchain install stable --profile minimal --component clippy
+          --target ${{ matrix.target }}
       - name: Run Clippy
         run:
           cargo clippy --all-targets --target ${{ matrix.target }} -- -D

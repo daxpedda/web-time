@@ -40,10 +40,10 @@ jobs:
       - uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli
-      - name: Install additional Rust targets
+      - name: Install Rust
         run: |
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
-          rustup target add ${{ matrix.target.target }}
       - name: Build
         run: cargo build --target ${{ matrix.target.target }}
       - name: Documentation
@@ -94,11 +94,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install additional Rust targets and components
-        run: |
-          rustup default nightly
-          rustup target add wasm32-unknown-unknown
-          rustup component add rust-src
+      - name: Install Rust
+        run: rustup toolchain install nightly --profile minimal
       - uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli
@@ -139,10 +136,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install additional Rust targets
+      - name: Install Rust
         run: |
+          rustup toolchain install ${{ matrix.rust }} --profile minimal --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust }}
-          rustup target add ${{ matrix.target }}
       - name: Install Rust nightly
         run: rustup toolchain install nightly --profile minimal
       - name: Build

@@ -1,3 +1,5 @@
+#![cfg(test)]
+
 mod util;
 
 use web_time::{Duration, Instant};

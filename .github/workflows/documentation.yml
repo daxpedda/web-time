@@ -29,8 +29,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install additional Rust targets
-        run: rustup +nightly target add wasm32-unknown-unknown
+      - name: Install Rust nightly
+        run: rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: --crate-version main
