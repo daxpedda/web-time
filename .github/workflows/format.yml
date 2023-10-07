@@ -19,9 +19,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Rust nightly
-        run:
-          rustup toolchain install nightly --profile minimal --component rustfmt
-          --allow-downgrade
+        run: rustup toolchain install nightly --profile minimal --component rustfmt --allow-downgrade
       - name: Run Rustfmt
         run: cargo +nightly fmt --check
 
