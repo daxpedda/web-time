@@ -25,6 +25,7 @@ jobs:
         run: |
           cargo spellcheck check -m 1
           cargo spellcheck check -m 1 CHANGELOG.md
+          cargo spellcheck check -m 1 CONTRIBUTING.md
 
   typos:
     name: Typos

@@ -1,4 +1,5 @@
-11
+13
+Atomics
 Changelog
 CHANGELOG
 Emscripten
@@ -10,3 +11,4 @@ timestamps
 v1
 Versioning
 WASI
+Wasm
