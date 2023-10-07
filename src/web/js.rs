@@ -1,6 +1,5 @@
 //! Bindings to the JS API.
 
-use once_cell::unsync::Lazy;
 use wasm_bindgen::prelude::wasm_bindgen;
 use wasm_bindgen::{JsCast, JsValue};
 
@@ -22,7 +21,7 @@ extern "C" {
 }
 
 thread_local! {
-	pub(super) static PERFORMANCE: Lazy<Performance> = Lazy::new(|| {
+	pub(super) static PERFORMANCE: Performance = {
 		let global: Global = js_sys::global().unchecked_into();
 		let performance = global.performance();
 
@@ -31,5 +30,5 @@ thread_local! {
 		} else {
 			performance.unchecked_into()
 		}
-	});
+	};
 }

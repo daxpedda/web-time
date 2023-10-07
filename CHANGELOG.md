@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bump MSRV to v1.60.
 
+### Removed
+
+- Unnecessary `once_cell` dependency.
+
 ## [0.2.0] - 2023-03-28
 
 ### Added

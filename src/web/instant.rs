@@ -3,14 +3,11 @@
 use std::ops::{Add, AddAssign, Sub, SubAssign};
 use std::time::Duration;
 
-#[cfg(target_feature = "atomics")]
-use once_cell::unsync::Lazy;
-
 use super::js::PERFORMANCE;
 
 #[cfg(target_feature = "atomics")]
 thread_local! {
-	static ORIGIN: Lazy<f64> = Lazy::new(|| PERFORMANCE.with(|performance| performance.time_origin()));
+	static ORIGIN: f64 = PERFORMANCE.with(|performance| performance.time_origin());
 }
 
 /// See [`std::time::Instant`].
@@ -23,7 +20,7 @@ impl Instant {
 	pub fn now() -> Self {
 		let now = PERFORMANCE.with(|performance| {
 			#[cfg(target_feature = "atomics")]
-			return ORIGIN.with(|origin| performance.now() + **origin);
+			return ORIGIN.with(|origin| performance.now() + origin);
 
 			#[cfg(not(target_feature = "atomics"))]
 			performance.now()
