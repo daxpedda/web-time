@@ -1,3 +1,6 @@
+//! Failure tests have to be separated as `should_panic` can cause serious
+//! problems with `panic = "abort"`.
+
 #![cfg(test)]
 
 mod util;
@@ -18,14 +21,6 @@ test! {
 	async fn add_failure() {
 		sleep(DIFF).await;
 		let _ = SystemTime::now() + Duration::MAX;
-	}
-
-	/// [`SystemTime::add_assign()`] failure.
-	#[should_panic]
-	async fn add_assign_failure() {
-		sleep(DIFF).await;
-		let mut time = SystemTime::now();
-		time += Duration::MAX;
 	}
 
 	/// [`SystemTime::sub()`] failure.
