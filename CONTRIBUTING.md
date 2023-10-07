@@ -5,7 +5,7 @@ Thank you for contributing!
 ## Wasm Atomics
 
 This crate has some code paths that depend on Wasm Atomics, which has some prerequisites to compile:
-- Rust nightly
+- Rust nightly.
 - The `rust-src` component.
 - Cargo's [`build-std`].
 - The `atomics` and `bulk-memory` target features.
