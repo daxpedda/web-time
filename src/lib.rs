@@ -54,6 +54,10 @@
 //!
 //! [instant](https://crates.io/crates/instant) [![Crates.io](https://img.shields.io/crates/v/instant.svg)](https://crates.io/crates/instant) is a popular alternative! However the API it implements doesn't match [`std::time`] exactly.
 //!
+//! # Contributing
+//!
+//! See the [CONTRIBUTING] file for details.
+//!
 //! # Attribution
 //!
 //! Inspiration was taken from the [instant](https://github.com/sebcrozet/instant/tree/v0.1.12) project.
@@ -86,6 +90,7 @@
 //! conditions.
 //!
 //! [CHANGELOG]: https://github.com/daxpedda/web-time/blob/v0.2.0/CHANGELOG.md
+//! [CONTRIBUTING]: https://github.com/daxpedda/web-time/blob/v0.2.0/CONTRIBUTING.md
 //! [LICENSE-MIT]: https://github.com/daxpedda/web-time/blob/v0.2.0/LICENSE-MIT
 //! [LICENSE-APACHE]: https://github.com/daxpedda/web-time/blob/v0.2.0/LICENSE-APACHE
 //! [`Date.now()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
