@@ -62,14 +62,17 @@ jobs:
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
           RUSTFLAGS: ${{ matrix.rust.flags }}
         run: cargo doc --no-deps --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
+      - name: Test
+        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == true
+        run: cargo test --all-targets --no-fail-fast
       - name: Test on Chrome
-        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest'
+        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == false
         env:
           CHROMEDRIVER: chromedriver
           RUSTFLAGS: ${{ matrix.rust.flags }}
         run: cargo test --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
       - name: Test on Firefox
-        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest'
+        if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == false
         env:
           GECKODRIVER: geckodriver
           RUSTFLAGS: ${{ matrix.rust.flags }}
