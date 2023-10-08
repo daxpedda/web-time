@@ -26,7 +26,15 @@ impl Instant {
 			performance.now()
 		});
 
-		Self(Duration::from_secs_f64(now))
+		#[allow(
+			clippy::as_conversions,
+			clippy::cast_possible_truncation,
+			clippy::cast_sign_loss
+		)]
+		let duration = Duration::from_millis(now.trunc() as u64)
+			+ Duration::from_nanos((now.fract() * 1.0e6) as u64);
+
+		Self(duration)
 	}
 
 	/// See [`std::time::Instant::duration_since()`].
