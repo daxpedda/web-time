@@ -18,7 +18,9 @@ test! {
 	async fn duration_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(Instant::now().duration_since(instant) >= DIFF);
+		let duration = Instant::now().duration_since(instant);
+		assert!(duration >= DIFF);
+		assert!(duration <= DIFF * 2);
 	}
 
 	/// [`Instant::duration_since()`] failure.
@@ -32,7 +34,9 @@ test! {
 	async fn checked_duration_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(Instant::now().checked_duration_since(instant) >= Some(DIFF));
+		let duration = Instant::now().checked_duration_since(instant);
+		assert!(duration >= Some(DIFF));
+		assert!(duration <= Some(DIFF * 2));
 	}
 
 	/// [`Instant::checked_duration_since()`] failure.
@@ -46,7 +50,9 @@ test! {
 	async fn saturating_duration_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(Instant::now().saturating_duration_since(instant) >= DIFF);
+		let duration = Instant::now().saturating_duration_since(instant);
+		assert!(duration >= DIFF);
+		assert!(duration <= DIFF * 2);
 	}
 
 	/// [`Instant::saturating_duration_fail()`] success.
@@ -63,14 +69,18 @@ test! {
 	async fn elapsed() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(instant.elapsed() >= DIFF);
+		let duration = instant.elapsed();
+		assert!(duration >= DIFF);
+		assert!(duration <= DIFF * 2);
 	}
 
 	/// [`Instant::checked_add()`] success.
 	async fn checked_add_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(instant.checked_add(DIFF).unwrap() <= Instant::now());
+		let now = Instant::now();
+		assert!(instant.checked_add(DIFF).unwrap() <= now);
+		assert!(instant.checked_add(DIFF * 2).unwrap() >= now);
 	}
 
 	/// [`Instant::checked_add()`] failure.
@@ -83,7 +93,9 @@ test! {
 	async fn checked_sub_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(Instant::now().checked_sub(DIFF).unwrap() >= instant);
+		let now = Instant::now();
+		assert!(now.checked_sub(DIFF).unwrap() >= instant);
+		assert!(now.checked_sub(DIFF * 2).unwrap() <= instant);
 	}
 
 	/// [`Instant::checked_sub()`] failure.
@@ -95,22 +107,29 @@ test! {
 	async fn add_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(instant + DIFF <= Instant::now());
+		let now = Instant::now();
+		assert!(instant + DIFF <= now);
+		assert!(instant + DIFF * 2 >= now);
 	}
 
 	/// [`Instant::add_assign()`] success.
 	async fn add_assign_success() {
 		let mut instant = Instant::now();
 		sleep(DIFF).await;
+		let now = Instant::now();
 		instant += DIFF;
-		assert!(instant <= Instant::now());
+		assert!(instant <= now);
+		instant += DIFF;
+		assert!(instant >= now);
 	}
 
 	/// [`Instant::sub()`] success.
 	async fn sub_success() {
 		let instant = Instant::now();
 		sleep(DIFF).await;
-		assert!(Instant::now() - DIFF >= instant);
+		let now = Instant::now();
+		assert!(now - DIFF >= instant);
+		assert!(now - DIFF * 2 <= instant);
 	}
 
 	/// [`Instant::sub_assign()`] success.
@@ -120,6 +139,8 @@ test! {
 		let mut later = Instant::now();
 		later -= DIFF;
 		assert!(later >= earlier);
+		later -= DIFF;
+		assert!(later <= earlier);
 	}
 
 	/// [`Self`] comparisons.

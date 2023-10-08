@@ -22,7 +22,7 @@ pub(crate) use self::std::*;
 ))]
 pub(crate) use self::web::*;
 
-pub(crate) const DIFF: Duration = Duration::from_millis(10);
+pub(crate) const DIFF: Duration = Duration::from_millis(50);
 
 #[macro_export]
 macro_rules! test {
