@@ -1,3 +1,6 @@
+[build]
+rustdocflags = ["-Wrustdoc::all"]
+
 [target.wasm32-unknown-unknown]
 runner = "wasm-bindgen-test-runner"
 
@@ -78,8 +81,6 @@ rustflags = [
 	"-Aclippy::option_if_let_else",
 	"-Aclippy::redundant_pub_crate",
 	"-Aclippy::tabs_in_doc_comments",
-	# Rustdoc group.
-	"-Wrustdoc::all",
 	# Rust groups.
 	"-Wfuture_incompatible",
 	"-Wrust_2018_compatibility",
