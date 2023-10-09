@@ -25,10 +25,13 @@ To get proper diagnostics for Rust Atomics it can be helpful to configure Rust A
 Here is an example configuration for Visual Studio Code:
 ```json
 "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
-"rust-analyzer.cargo.extraArgs": ["-Zbuild-std=panic_abort,std"],
+"rust-analyzer.cargo.extraArgs": [
+    "-Zbuild-std=panic_abort,std"
+],
 "rust-analyzer.cargo.extraEnv": {
     "RUSTUP_TOOLCHAIN": "nightly",
-    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
+    // Don't overwrite `RUSTFLAGS` from `.cargo/config.toml`.
+    "CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
 },
 ```
 

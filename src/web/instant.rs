@@ -7,7 +7,7 @@ use super::js::PERFORMANCE;
 
 #[cfg(target_feature = "atomics")]
 thread_local! {
-	static ORIGIN: f64 = PERFORMANCE.with(|performance| performance.time_origin());
+	static ORIGIN: f64 = PERFORMANCE.with(super::js::Performance::time_origin);
 }
 
 /// See [`std::time::Instant`].
