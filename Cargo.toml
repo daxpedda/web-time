@@ -10,9 +10,6 @@ repository = "https://github.com/daxpedda/web-time"
 rust-version = "1.60"
 version = "0.2.2"
 
-[lib]
-test = false
-
 [target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi"))))'.dependencies]
 js-sys = "0.3.20"
 wasm-bindgen = { version = "0.2.70", default-features = false }
@@ -21,6 +18,8 @@ wasm-bindgen = { version = "0.2.70", default-features = false }
 pollster = { version = "0.3", features = ["macro"] }
 
 [target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi"))))'.dev-dependencies]
+getrandom = { version = "0.2", features = ["js"] }
+rand = "0.8"
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = { version = "0.3", features = ["Window"] }
