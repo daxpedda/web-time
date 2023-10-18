@@ -321,7 +321,6 @@ mod test {
 
 	#[wasm_bindgen_test]
 	fn fuzzing() {
-		#[allow(clippy::as_conversions, clippy::cast_precision_loss)]
 		let mut random =
 			rand::thread_rng().sample_iter(Uniform::new_inclusive(0., MAXIMUM_ACCURATE_MILLIS));
 
