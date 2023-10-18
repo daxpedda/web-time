@@ -1,4 +1,5 @@
 [package]
+autobenches = false
 categories = ["api-bindings", "date-and-time", "wasm"]
 description = "Drop-in replacement for std::time for Wasm in browsers"
 edition = "2021"
@@ -22,13 +23,29 @@ getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
-web-sys = { version = "0.3", features = ["Window"] }
+web-sys = { version = "0.3", features = [
+	"CssStyleDeclaration",
+	"Document",
+	"Element",
+	"HtmlTableElement",
+	"HtmlTableRowElement",
+	"Performance",
+	"Window",
+] }
 
 [target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi")), target_feature = "atomics"))'.dev-dependencies]
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
 wasm-worker = { git = "https://github.com/daxpedda/wasm-worker" }
-web-sys = { version = "0.3", features = ["Window", "WorkerGlobalScope"] }
+web-sys = { version = "0.3", features = ["WorkerGlobalScope"] }
+
+[profile.bench]
+codegen-units = 1
+lto = true
+
+[[example]]
+name = "benchmark"
+path = "benches/benchmark.rs"
 
 [package.metadata.docs.rs]
 targets = ["wasm32-unknown-unknown"]

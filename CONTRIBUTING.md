@@ -48,3 +48,19 @@ The current workaround is to split tests using `await` into separate test target
 
 [`build-std`]: https://doc.rust-lang.org/1.73.0/cargo/reference/unstable.html#build-std
 [`should_panic`]: https://doc.rust-lang.org/1.73.0/reference/attributes/testing.html#the-should_panic-attribute
+
+## Benchmark
+
+The only benchmark is marked as an example target because of the lack of Wasm support. To run it you can use the following command:
+```sh
+cargo build --example benchmark --target wasm32-unknown-unknown --profile bench
+wasm-bindgen --out-dir benches --target web --no-typescript target/wasm32-unknown-unknown/release/examples/benchmark.wasm
+```
+The `benches` folder then needs to be hosted by a HTTP server to run it in a browser.
+
+Optionally `wasm-opt` could be added as well:
+```sh
+wasm-opt benches/benchmark_bg.wasm -o benches/benchmark_bg.wasm -O4
+```
+
+Additionally keep in mind that any changes to the `time_stamp_to_duration()` function in `src/web/instant.rs` should be synced with the implementation in the benchmark.
