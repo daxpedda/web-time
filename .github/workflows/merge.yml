@@ -1,0 +1,38 @@
+name: Fast-forward merge
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  fast_forward:
+    name: Fast-forward merge
+
+    runs-on: ubuntu-latest
+
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.author_association == 'OWNER' && 
+      github.event.comment.body == '/fast-forward-merge'
+
+    permissions:
+        contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Checkout pull request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh pr checkout ${{ github.event.issue.number }}
+      - name: Get target branch
+        id: base-ref
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: echo "base_ref=$(gh pr view 5 --json baseRefName)" >> $GITHUB_OUTPUT
+      - name: Fast-forward merge
+        run: |
+          export PR_COMMIT=$(git rev-parse HEAD)
+          git checkout ${{ fromJSON(steps.base-ref.outputs.base_ref).baseRefName }}
+          git merge --ff-only "$PR_COMMIT"
+          git push origin ${{ fromJSON(steps.base-ref.outputs.base_ref).baseRefName }}
