@@ -1,0 +1,26 @@
+name: Fast-forward merge
+
+on:
+  issue_comment:
+    types: [created, edited]
+
+jobs:
+  fast_forward:
+    name: Fast-forward merge
+    runs-on: ubuntu-latest
+    if: |
+      github.event.issue.pull_request &&
+      github.event.comment.author_association == 'OWNER' && 
+      github.event.comment.body == '/fast-forward-merge'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Checkout pull request
+        run: hub pr checkout ${{ github.event.issue.number }}
+      - name: Fast-forward & push
+        run: |
+          export PR_COMMIT=$(git rev-parse HEAD)
+          git checkout ${{ github.base_ref }}
+          git merge --ff-only "$PR_COMMIT"
+          git push origin ${{ github.base_ref }}
