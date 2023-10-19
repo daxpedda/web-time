@@ -12,27 +12,46 @@ jobs:
 
     if: |
       github.event.issue.pull_request &&
+      github.event.issue.state == 'open' &&
       github.event.comment.author_association == 'OWNER' && 
       github.event.comment.body == '/fast-forward-merge'
 
     permissions:
         contents: write
+        pull-requests: write
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Minimize calling comment
+        uses: actions/github-script@v6
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            await github.graphql(`mutation { minimizeComment(input: { subjectId: "${context.payload.comment.node_id}", classifier: OUTDATED }) { clientMutationId } }`)
       - name: Checkout pull request
+        id: pr
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: gh pr checkout ${{ github.event.issue.number }}
-      - name: Get target branch
-        id: base-ref
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: echo "base_ref=$(gh pr view 5 --json baseRefName)" >> $GITHUB_OUTPUT
+        run: |
+          gh pr checkout ${{ github.event.issue.number }}
+          echo "base_ref=$(gh pr view 5 --json baseRefName)" >> $GITHUB_OUTPUT
       - name: Fast-forward merge
         run: |
+          git config --global user.name "${GITHUB_ACTOR}"
+          git config --global user.email "${GITHUB_ACTOR_ID}+${GITHUB_ACTOR}@users.noreply.github.com"
           export PR_COMMIT=$(git rev-parse HEAD)
-          git checkout ${{ fromJSON(steps.base-ref.outputs.base_ref).baseRefName }}
-          git merge --ff-only "$PR_COMMIT"
-          git push origin ${{ fromJSON(steps.base-ref.outputs.base_ref).baseRefName }}
+          git checkout ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }}
+          git merge --ff-only "$PR_COMMIT" 2>output.log
+          git push origin ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }} 2>output.log
+      - name: Post errors
+        if: ${{ failure() }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh pr comment ${{ github.event.issue.number }} -b "Failure merging:
+          \`\`\`
+          $(cat output.log)
+          \`\`\`"
