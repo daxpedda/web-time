@@ -36,12 +36,12 @@ fn main() {
 		// CHANGED: 1G to 1M.
 		const NANOS_PER_MILLI: u32 = 1_000_000;
 
-		// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1477-1484>
+		// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1477-1484>.
 		const MANT_BITS: i16 = 52;
 		const EXP_BITS: i16 = 11;
 		const OFFSET: i16 = 44;
 
-		// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1262-1340>
+		// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1262-1340>.
 		const MIN_EXP: i16 = 1 - (1_i16 << EXP_BITS) / 2;
 		const MANT_MASK: u64 = (1 << MANT_BITS) - 1;
 		const EXP_MASK: u64 = (1 << 1_i16 << EXP_BITS) - 1;
@@ -164,7 +164,7 @@ fn main() {
 				let start = PERFORMANCE.with(Performance::now);
 
 				for time_stamp in time_stamps {
-					hint::black_box(f(time_stamp));
+					hint::black_box(f(hint::black_box(time_stamp)));
 				}
 
 				time += PERFORMANCE.with(Performance::now) - start;
