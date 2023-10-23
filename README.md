@@ -23,6 +23,10 @@ Additionally, if compiled with `target-feature = "atomics"` it will
 synchronize the timestamps to account for different context's, like web
 workers. See [`Performance.timeOrigin`] for more information.
 
+Using `-Ctarget-feature=+nontrapping-fptoint` will improve the performance
+of [`Instant::now()`] and [`SystemTime::now()`], but the vast majority of
+the time is still spent going through JS.
+
 ## Target
 
 This library specifically targets browsers, that support

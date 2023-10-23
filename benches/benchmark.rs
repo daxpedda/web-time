@@ -30,7 +30,6 @@ fn main() {
 	use wasm_bindgen::JsCast;
 	use web_sys::{HtmlTableElement, HtmlTableRowElement, Performance};
 
-	/// Copy from `src/web/instant.rs`. This should be kept in sync.
 	#[allow(clippy::missing_docs_in_private_items)]
 	fn custom_conversion(time_stamp: f64) -> Duration {
 		// CHANGED: 1G to 1M.

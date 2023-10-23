@@ -114,118 +114,16 @@ impl SubAssign<Duration> for Instant {
 ///
 /// # Note
 ///
-/// This is trying to emulate exactly what [`Duration::from_secs_f64()`] does,
-/// but accounting for the conversion from milliseconds instead of seconds which
-/// also makes it slightly more expensive.
-///
 /// Keep in mind that like [`Duration::from_secs_f64()`] this doesn't do perfect
 /// rounding.
 #[allow(
 	clippy::as_conversions,
 	clippy::cast_possible_truncation,
-	clippy::min_ident_chars,
-	clippy::missing_docs_in_private_items
+	clippy::cast_sign_loss
 )]
 fn time_stamp_to_duration(time_stamp: f64) -> Duration {
-	// CHANGED: 1G to 1M.
-	const NANOS_PER_MILLI: u32 = 1_000_000;
-
-	// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1477-1484>
-	const MANT_BITS: i16 = 52;
-	const EXP_BITS: i16 = 11;
-	const OFFSET: i16 = 44;
-
-	// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1262-1340>
-	const MIN_EXP: i16 = 1 - (1_i16 << EXP_BITS) / 2;
-	const MANT_MASK: u64 = (1 << MANT_BITS) - 1;
-	const EXP_MASK: u64 = (1 << 1_i16 << EXP_BITS) - 1;
-
-	assert!(
-		time_stamp >= 0.0,
-		"can not convert float seconds to Duration: value is negative"
-	);
-
-	let bits = time_stamp.to_bits();
-	let mant = (bits & MANT_MASK) | (MANT_MASK + 1);
-	let exp = ((bits >> MANT_BITS) & EXP_MASK) as i16 + MIN_EXP;
-
-	// CHANGED: 31 to 21 bits, because the fractional part only handles
-	// microseconds, not milliseconds.
-	let (millis, mut nanos) = if exp < -21 {
-		// the input represents less than 1ns and can not be rounded to it
-		// CHANGED: Return early.
-		return Duration::ZERO;
-	} else if exp < 0 {
-		// the input is less than 1 millisecond
-		let t = <u128>::from(mant) << (OFFSET + exp);
-		let nanos_offset = MANT_BITS + OFFSET;
-		let nanos_tmp = u128::from(NANOS_PER_MILLI) * t;
-		let nanos = (nanos_tmp >> nanos_offset) as u32;
-
-		let rem_mask = (1 << nanos_offset) - 1;
-		let rem_msb_mask = 1 << (nanos_offset - 1);
-		let rem = nanos_tmp & rem_mask;
-		let is_tie = rem == rem_msb_mask;
-		let is_even = (nanos & 1) == 0;
-		let rem_msb = nanos_tmp & rem_msb_mask == 0;
-		let add_ns = !(rem_msb || (is_even && is_tie));
-
-		let nanos = nanos + u32::from(add_ns);
-		// CHANGED: Removed `f32` handling.
-		// CHANGED: Return early.
-		#[allow(clippy::if_not_else)]
-		return if nanos != NANOS_PER_MILLI {
-			Duration::new(0, nanos)
-		} else {
-			// CHANGED: Do second to millisecond conversion right here because of the early
-			// return.
-			Duration::from_millis(1)
-		};
-	} else if exp < MANT_BITS {
-		let millis = mant >> (MANT_BITS - exp);
-		let t = <u128>::from((mant << exp) & MANT_MASK);
-		let nanos_offset = MANT_BITS;
-		let nanos_tmp = <u128>::from(NANOS_PER_MILLI) * t;
-		let nanos = (nanos_tmp >> nanos_offset) as u32;
-
-		let rem_mask = (1 << nanos_offset) - 1;
-		let rem_msb_mask = 1 << (nanos_offset - 1);
-		let rem = nanos_tmp & rem_mask;
-		let is_tie = rem == rem_msb_mask;
-		let is_even = (nanos & 1) == 0;
-		let rem_msb = nanos_tmp & rem_msb_mask == 0;
-		let add_ns = !(rem_msb || (is_even && is_tie));
-
-		let nanos = nanos + u32::from(add_ns);
-		// CHANGED: Removed `f32` handling.
-		#[allow(clippy::if_not_else)]
-		if nanos != NANOS_PER_MILLI {
-			(millis, nanos)
-		} else {
-			(millis + 1, 0)
-		}
-	}
-	// NOTE: Theoretically milliseconds can be bigger then `u64` when trying to cover
-	// `Duration::MAX`, but `Performance.now` is a monotonic clock, so we don't need to cover that.
-	else if exp < 64 {
-		// the input has no fractional part
-		let millis = mant << (exp - MANT_BITS);
-		(millis, 0)
-	} else {
-		panic!("can not convert float seconds to Duration: value is either too big or NaN")
-	};
-
-	let secs = millis / 1000;
-	let carry = millis - secs * 1000;
-	let extra_nanos = carry * u64::from(NANOS_PER_MILLI);
-	nanos += extra_nanos as u32;
-
-	debug_assert!(
-		nanos < 1_000_000_000,
-		"impossible amount of nanoseconds found"
-	);
-
-	Duration::new(secs, nanos)
+	Duration::from_millis(time_stamp.trunc() as u64)
+		+ Duration::from_nanos((time_stamp.fract() * 1.0e6).round() as u64)
 }
 
 #[cfg(test)]

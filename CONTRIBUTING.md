@@ -62,5 +62,3 @@ Optionally `wasm-opt` could be added as well:
 ```sh
 wasm-opt benches/benchmark_bg.wasm -o benches/benchmark_bg.wasm -O4
 ```
-
-Additionally keep in mind that any changes to the `time_stamp_to_duration()` function in `src/web/instant.rs` should be synced with the implementation in the benchmark.
