@@ -13,10 +13,15 @@ jobs:
     if: |
       github.event.issue.pull_request &&
       github.event.issue.state == 'open' &&
-      github.event.comment.author_association == 'OWNER' && 
+      (
+        github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR'
+      ) &&
       github.event.comment.body == '/fast-forward-merge'
 
     permissions:
+        actions: write
         contents: write
         pull-requests: write
 
@@ -26,7 +31,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Minimize calling comment
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
@@ -62,3 +67,8 @@ jobs:
           \`\`\`
           $(cat output.log)
           \`\`\`"
+      - name: Run CI
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh workflow run General -r ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }}
