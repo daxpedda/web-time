@@ -71,4 +71,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run General -r ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }}
+          gh workflow run Test -r ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }}
