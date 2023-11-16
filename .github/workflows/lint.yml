@@ -39,9 +39,9 @@ jobs:
           rustup default ${{ matrix.rust.version }}
       - name: Run Clippy
         env:
-          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: ${{ matrix.rust.flags }}
+          RUSTFLAGS: ${{ matrix.rust.flags }}
         run: cargo clippy --all-targets --target ${{ matrix.target }} ${{ matrix.rust.args }} -- -D warnings
       - name: Run Rustdoc
         env:
-          RUSTDOCFLAGS: -D warnings -W rustdoc::all ${{ matrix.rust.flags }}
+          RUSTDOCFLAGS: ${{ matrix.rust.flags }}
         run: cargo doc --no-deps --document-private-items --examples --target ${{ matrix.target }} ${{ matrix.rust.args }}

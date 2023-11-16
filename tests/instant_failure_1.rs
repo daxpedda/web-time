@@ -17,20 +17,20 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 test! {
 	/// [`Instant::add()`] failure.
-	#[should_panic]
+	#[should_panic = "overflow when adding duration to instant"]
 	async fn add_failure() {
 		sleep(DIFF).await;
 		let _ = Instant::now() + Duration::MAX;
 	}
 
 	/// [`Instant::sub()`] failure.
-	#[should_panic]
+	#[should_panic = "overflow when subtracting duration from instant"]
 	async fn sub_failure() {
 		let _ = Instant::now() - Duration::MAX;
 	}
 
 	/// [`Instant::sub_assign()`] failure.
-	#[should_panic]
+	#[should_panic = "overflow when subtracting duration from instant"]
 	async fn sub_assign_failure() {
 		let mut instant = Instant::now();
 		instant -= Duration::MAX;

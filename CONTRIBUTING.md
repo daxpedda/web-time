@@ -30,8 +30,7 @@ Here is an example configuration for Visual Studio Code:
 ],
 "rust-analyzer.cargo.extraEnv": {
     "RUSTUP_TOOLCHAIN": "nightly",
-    // Don't overwrite `RUSTFLAGS` from `.cargo/config.toml`.
-    "CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
+    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
 },
 ```
 

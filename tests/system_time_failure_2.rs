@@ -17,7 +17,7 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 test! {
 	/// [`SystemTime::add_assign()`] failure.
-	#[should_panic]
+	#[should_panic = "overflow when adding duration to instant"]
 	async fn add_assign_failure() {
 		sleep(DIFF).await;
 		let mut time = SystemTime::now();
