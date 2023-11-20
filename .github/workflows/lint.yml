@@ -43,5 +43,5 @@ jobs:
         run: cargo clippy --all-targets --target ${{ matrix.target }} ${{ matrix.rust.args }} -- -D warnings
       - name: Run Rustdoc
         env:
-          RUSTDOCFLAGS: ${{ matrix.rust.flags }}
+          RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }}
         run: cargo doc --no-deps --document-private-items --examples --target ${{ matrix.target }} ${{ matrix.rust.args }}
