@@ -28,8 +28,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
       - name: Minimize calling comment
         uses: actions/github-script@v7
         with:
@@ -51,7 +49,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh pr checkout ${{ github.event.issue.number }}
-          echo "base_ref=$(gh pr view 5 --json baseRefName)" >> $GITHUB_OUTPUT
+          echo "base_ref=$(gh pr view ${{ github.event.issue.number }} --json baseRefName)" >> $GITHUB_OUTPUT
       - name: Fast-forward merge
         run: |
           export PR_COMMIT=$(git rev-parse HEAD)
