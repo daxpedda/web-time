@@ -3,6 +3,7 @@ name: Documentation
 on:
   push:
     branches: ["main"]
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -30,11 +31,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Rust nightly
-        run: rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown
+        run: |
+          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown
+          rustup default nightly
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: --crate-version main
-        run: cargo +nightly doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target wasm32-unknown-unknown
+        run: cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target wasm32-unknown-unknown
       - name: Setup Pages
         uses: actions/configure-pages@v4
       - name: Fix permissions
