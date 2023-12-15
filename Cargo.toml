@@ -59,6 +59,7 @@ rust_2021_compatibility = { level = "warn", priority = -1 }
 unused = { level = "warn", priority = -1 }
 # Rust lints.
 deprecated_in_future = "warn"
+ffi_unwind_calls = "warn"
 macro_use_extern_crate = "warn"
 meta_variable_misuse = "warn"
 missing_abi = "warn"
@@ -78,7 +79,6 @@ unused_qualifications = "warn"
 
 [lints.clippy]
 # Clippy groups.
-all = { level = "warn", priority = -1 }
 cargo = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
@@ -155,4 +155,4 @@ redundant_pub_crate = "allow"
 tabs_in_doc_comments = "allow"
 
 [lints.rustdoc]
-all = "warn"
+all = { level = "warn", priority = -1 }
