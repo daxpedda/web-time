@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Install Rust
         run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --component clippy${{ matrix.rust.component }} --target ${{ matrix.target }}
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --component clippy${{ matrix.rust.component }} --allow-downgrade --target ${{ matrix.target }}
           rustup default ${{ matrix.rust.version }}
       - name: Run Clippy
         env:

@@ -36,7 +36,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: taiki-e/install-action@v2
+      - name: Install Taplo
+        uses: taiki-e/install-action@v2
         with:
           tool: taplo-cli
       - name: Run Taplo
