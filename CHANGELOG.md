@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- Added `web` module containing a platform-specific extension trait to
+  `SystemTime`, allowing conversion from and to `std::time::SystemTime`.
+
 ### Changed
 - Improve performance of `SystemTime` by using `Duration` internally.
 

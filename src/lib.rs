@@ -111,7 +111,15 @@
 	target_family = "wasm",
 	not(any(target_os = "emscripten", target_os = "wasi"))
 ))]
-mod web;
+mod time;
+#[cfg(any(
+	all(
+		target_family = "wasm",
+		not(any(target_os = "emscripten", target_os = "wasi"))
+	),
+	docsrs
+))]
+pub mod web;
 
 #[cfg(not(all(
 	target_family = "wasm",
@@ -123,4 +131,4 @@ pub use std::time::*;
 	target_family = "wasm",
 	not(any(target_os = "emscripten", target_os = "wasi"))
 ))]
-pub use self::web::*;
+pub use self::time::*;

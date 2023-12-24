@@ -7,7 +7,7 @@ use std::time::Duration;
 
 /// See [`std::time::SystemTime`].
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct SystemTime(Duration);
+pub struct SystemTime(pub(crate) Duration);
 
 impl SystemTime {
 	/// See [`std::time::SystemTime::UNIX_EPOCH`].
