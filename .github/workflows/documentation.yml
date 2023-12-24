@@ -36,7 +36,7 @@ jobs:
           rustup default nightly
       - name: Run Rustdoc
         env:
-          RUSTDOCFLAGS: --crate-version main
+          RUSTDOCFLAGS: --crate-version main --cfg=docsrs
         run: cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target wasm32-unknown-unknown
       - name: Setup Pages
         uses: actions/configure-pages@v4

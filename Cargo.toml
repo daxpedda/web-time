@@ -48,6 +48,7 @@ name = "benchmark"
 path = "benches/benchmark.rs"
 
 [package.metadata.docs.rs]
+rustdoc-args = ["--cfg=docsrs"]
 targets = ["wasm32-unknown-unknown"]
 
 [lints.rust]

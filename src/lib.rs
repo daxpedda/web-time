@@ -107,6 +107,8 @@
 //! [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 
+#![cfg_attr(docsrs, feature(doc_cfg))]
+
 #[cfg(all(
 	target_family = "wasm",
 	not(any(target_os = "emscripten", target_os = "wasi"))
@@ -119,6 +121,7 @@ mod time;
 	),
 	docsrs
 ))]
+#[cfg_attr(docsrs, doc(cfg(Web)))]
 pub mod web;
 
 #[cfg(not(all(
