@@ -1,7 +1,7 @@
 #![cfg(test)]
 #![cfg(all(
 	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi")),
+	target_os = "unknown",
 	target_feature = "atomics"
 ))]
 

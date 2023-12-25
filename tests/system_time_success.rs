@@ -7,12 +7,6 @@ use web_time::{Duration, SystemTime};
 
 use self::util::{sleep, DIFF};
 
-#[cfg(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-))]
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
 test! {
 	/// [`SystemTime::UNIX_EPOCH`].
 	#[allow(clippy::eq_op)]

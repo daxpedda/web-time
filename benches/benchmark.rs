@@ -1,17 +1,11 @@
 //! Benchmark to compare different conversion methods.
 
-#[cfg(not(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-)))]
+#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 fn main() {
 	panic!("made to run under `wasm32-unknown-unknown`")
 }
 
-#[cfg(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-))]
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
 #[allow(
 	clippy::too_many_lines,
 	clippy::as_conversions,

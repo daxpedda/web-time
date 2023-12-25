@@ -11,14 +11,14 @@ repository = "https://github.com/daxpedda/web-time"
 rust-version = "1.60"
 version = "0.2.4"
 
-[target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi"))))'.dependencies]
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
 js-sys = "0.3.20"
 wasm-bindgen = { version = "0.2.70", default-features = false }
 
-[target.'cfg(not(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi")))))'.dev-dependencies]
+[target.'cfg(not(all(target_family = "wasm", target_os = "unknown")))'.dev-dependencies]
 pollster = { version = "0.3", features = ["macro"] }
 
-[target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi"))))'.dev-dependencies]
+[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
 wasm-bindgen-futures = "0.4"
@@ -33,7 +33,7 @@ web-sys = { version = "0.3", features = [
 	"Window",
 ] }
 
-[target.'cfg(all(target_family = "wasm", not(any(target_os = "emscripten", target_os = "wasi")), target_feature = "atomics"))'.dev-dependencies]
+[target.'cfg(all(target_family = "wasm", target_os = "unknown", target_feature = "atomics"))'.dev-dependencies]
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
 wasm-worker = { git = "https://github.com/daxpedda/wasm-worker" }

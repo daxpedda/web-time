@@ -109,29 +109,14 @@
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-#[cfg(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-))]
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
 mod time;
-#[cfg(any(
-	all(
-		target_family = "wasm",
-		not(any(target_os = "emscripten", target_os = "wasi"))
-	),
-	docsrs
-))]
+#[cfg(any(all(target_family = "wasm", target_os = "unknown"), docsrs))]
 #[cfg_attr(docsrs, doc(cfg(Web)))]
 pub mod web;
 
-#[cfg(not(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-)))]
+#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
 pub use std::time::*;
 
-#[cfg(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-))]
+#[cfg(all(target_family = "wasm", target_os = "unknown"))]
 pub use self::time::*;

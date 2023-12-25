@@ -9,12 +9,6 @@ use web_time::{Duration, Instant};
 
 use self::util::{sleep, DIFF};
 
-#[cfg(all(
-	target_family = "wasm",
-	not(any(target_os = "emscripten", target_os = "wasi"))
-))]
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
 test! {
 	/// [`Instant::add_assign()`] failure.
 	#[should_panic = "overflow when adding duration to instant"]
