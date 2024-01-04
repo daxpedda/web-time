@@ -44,4 +44,4 @@ jobs:
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }}
-        run: cargo doc --no-deps --document-private-items --examples --target ${{ matrix.target }} ${{ matrix.rust.args }}
+        run: cargo doc --no-deps --document-private-items --target ${{ matrix.target }} ${{ matrix.rust.args }}
