@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 name = "web-time"
 repository = "https://github.com/daxpedda/web-time"
 rust-version = "1.60"
-version = "0.2.4"
+version = "1.0.0"
 
 [target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
 js-sys = "0.3.20"
