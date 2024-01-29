@@ -16,6 +16,14 @@ pub struct Instant(Duration);
 
 impl Instant {
 	/// See [`std::time::Instant::now()`].
+	///
+	/// # Panics
+	///
+	/// This call will panic if the [`Performance` object] was not found, e.g.
+	/// calling from a [worklet].
+	///
+	/// [`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property
+	/// [worklet]: https://developer.mozilla.org/en-US/docs/Web/API/Worklet
 	#[must_use]
 	pub fn now() -> Self {
 		let now = PERFORMANCE.with(|performance| {

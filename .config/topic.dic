@@ -1,4 +1,4 @@
-17
+18
 1G
 1M
 1ns
@@ -16,3 +16,4 @@ v1
 Versioning
 WASI
 Wasm
+worklet
