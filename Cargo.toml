@@ -15,10 +15,10 @@ version = "1.0.0"
 js-sys = "0.3.20"
 wasm-bindgen = { version = "0.2.70", default-features = false }
 
-[target.'cfg(not(all(target_family = "wasm", target_os = "unknown")))'.dev-dependencies]
+[target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
 pollster = { version = "0.3", features = ["macro"] }
 
-[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dev-dependencies]
+[target.'cfg(target_family = "wasm")'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
 wasm-bindgen-futures = "0.4"
@@ -33,7 +33,7 @@ web-sys = { version = "0.3", features = [
 	"Window",
 ] }
 
-[target.'cfg(all(target_family = "wasm", target_os = "unknown", target_feature = "atomics"))'.dev-dependencies]
+[target.'cfg(all(target_family = "wasm", target_feature = "atomics"))'.dev-dependencies]
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
 wasm-worker = { git = "https://github.com/daxpedda/wasm-worker", rev = "8b3e6324bdb5d44d5565b6981ce74ee773da9e3f" }
