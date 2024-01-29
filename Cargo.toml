@@ -15,6 +15,9 @@ version = "1.0.0"
 js-sys = "0.3.20"
 wasm-bindgen = { version = "0.2.70", default-features = false }
 
+[dev-dependencies]
+static_assertions = "1"
+
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
 pollster = { version = "0.3", features = ["macro"] }
 
