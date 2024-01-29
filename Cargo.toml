@@ -36,7 +36,7 @@ web-sys = { version = "0.3", features = [
 [target.'cfg(all(target_family = "wasm", target_os = "unknown", target_feature = "atomics"))'.dev-dependencies]
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
-wasm-worker = { git = "https://github.com/daxpedda/wasm-worker" }
+wasm-worker = { git = "https://github.com/daxpedda/wasm-worker", rev = "8b3e6324bdb5d44d5565b6981ce74ee773da9e3f" }
 web-sys = { version = "0.3", features = ["WorkerGlobalScope"] }
 
 [profile.bench]
