@@ -2,6 +2,8 @@
 
 mod instant;
 mod js;
+#[cfg(feature = "serde")]
+mod serde;
 mod system_time;
 
 pub use std::time::*;
