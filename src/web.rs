@@ -1,4 +1,4 @@
-//! Platform-specific extensions to `web-time` for the Web platform.
+//! Platform-specific extensions to [`web-time`](crate) for the Web platform.
 
 #![allow(clippy::absolute_paths)]
 

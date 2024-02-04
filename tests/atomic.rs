@@ -1,9 +1,5 @@
 #![cfg(test)]
-#![cfg(all(
-	target_family = "wasm",
-	target_os = "unknown",
-	target_feature = "atomics"
-))]
+#![cfg(all(target_family = "wasm", target_feature = "atomics"))]
 
 mod util;
 

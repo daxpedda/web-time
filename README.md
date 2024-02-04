@@ -40,12 +40,20 @@ which case multiple ecosystems could be supported.
 
 ## Note
 
+### Ticking during sleep
+
 Currently a known bug is affecting browsers on operating system other then
 Windows. This bug prevents [`Instant`] from continuing to tick when the
 context is asleep. This doesn't necessarily conflict with Rusts requirements
 of [`Instant`], but might still be unexpected.
 
 See [the MDN documentation on this](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now#ticking_during_sleep) for more information.
+
+### Context support
+
+The implementation of [`Instant::now()`] relies on the availability of the
+[`Performance` object], a lack thereof will cause a panic. This can happen
+if called from a [worklet].
 
 ## Usage
 
@@ -105,6 +113,7 @@ conditions.
 [CONTRIBUTING]: https://github.com/daxpedda/web-time/blob/v1.0.0/CONTRIBUTING.md
 [LICENSE-MIT]: https://github.com/daxpedda/web-time/blob/v1.0.0/LICENSE-MIT
 [LICENSE-APACHE]: https://github.com/daxpedda/web-time/blob/v1.0.0/LICENSE-APACHE
+[worklet]: https://developer.mozilla.org/en-US/docs/Web/API/Worklet
 [`Date.now()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
 [`Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html
 [`Instant::now()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.now
@@ -113,4 +122,5 @@ conditions.
 [`std::time`]: https://doc.rust-lang.org/stable/std/time/
 [`performance.now()`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
 [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
+[`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property
 [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen

@@ -1,13 +1,13 @@
-#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
+#[cfg(not(target_family = "wasm"))]
 mod std;
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+#[cfg(target_family = "wasm")]
 mod web;
 
 use web_time::Duration;
 
-#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
+#[cfg(not(target_family = "wasm"))]
 pub(crate) use self::std::*;
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+#[cfg(target_family = "wasm")]
 pub(crate) use self::web::*;
 
 pub(crate) const DIFF: Duration = Duration::from_millis(50);
@@ -15,16 +15,16 @@ pub(crate) const DIFF: Duration = Duration::from_millis(50);
 #[macro_export]
 macro_rules! test {
 	($($test:item)*) => {
-		#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+		#[cfg(target_family = "wasm")]
 		wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 		$(
 			#[cfg_attr(
-				not(all(target_family = "wasm", target_os = "unknown")),
+				not(target_family = "wasm"),
 				pollster::test
 			)]
 			#[cfg_attr(
-				all(target_family = "wasm", target_os = "unknown"),
+				target_family = "wasm",
 				wasm_bindgen_test::wasm_bindgen_test
 			)]
 			#[allow(
