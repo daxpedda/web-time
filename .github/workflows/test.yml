@@ -15,7 +15,7 @@ env:
 jobs:
   build-test:
     # Skip the `extra_cmd` field in the name, so that it's easy to change the `cargo update` for MSRV without requiring github reconfiguration
-    name: "Build & Test (${{ matrix.os }}, ${{ matrix.rust.version }}, ${{ matrix.rust.msrv }}, ${{ matrix.rust.component }}, ${{ matrix.rust.flags }}, ${{ matrix.rust.args }}, ${{ matrix.target.target }}, ${{ matrix.target.native }})"
+    name: "Build & Test (${{ matrix.os }}, ${{ matrix.rust.name }}, ${{ matrix.target.target }})"
 
     runs-on: ${{ matrix.os }}
 
@@ -27,20 +27,20 @@ jobs:
         os:
           - ubuntu-latest
         rust:
-          - { version: "1.60", msrv: true, component: "", flags: "", args: "", extra_cmd: "cargo update -p bumpalo --precise 3.14.0" }
-          - { version: stable, msrv: false, component: "", flags: "", args: "", extra_cmd: "" }
+          - { name: "MSRV", version: "1.60", msrv: true, component: "", flags: "", args: "", extra_cmd: "cargo update -p bumpalo --precise 3.14.0" }
+          - { name: "Stable", version: stable, msrv: false, component: "", flags: "", args: "", extra_cmd: "" }
         target:
           - { target: x86_64-unknown-linux-gnu, native: true }
           - { target: wasm32-unknown-unknown, native: false }
         include:
           - os: macos-latest
-            rust: { version: stable, msrv: false, component: "", flags: "", args: "" }
+            rust: { name: "Stable", version: stable, msrv: false, component: "", flags: "", args: "", extra_cmd: "" }
             target: { target: wasm32-unknown-unknown, native: false }
           - os: ubuntu-latest
-            rust: { version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
+            rust: { name: "Nightly (Atomics)", version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std", extra_cmd: "" }
             target: { target: wasm32-unknown-unknown, native: false }
           - os: macos-latest
-            rust: { version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
+            rust: { name: "Nightly (Atomics)", version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std", extra_cmd: "" }
             target: { target: wasm32-unknown-unknown, native: false }
 
     steps:
