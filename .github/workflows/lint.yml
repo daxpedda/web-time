@@ -26,9 +26,17 @@ jobs:
           - wasm32-unknown-unknown
         rust:
           - { version: stable, component: "", rustflags: "", args: "" }
+        extra_clippy_args:
+          - ""
         include:
           - target: wasm32-unknown-unknown
-            rust: { version: nightly, component: ",rust-src", flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
+            rust:
+              version: nightly
+              component: ",rust-src"
+              flags: "-Ctarget-feature=+atomics,+bulk-memory"
+              args: "-Zbuild-std=panic_abort,std"
+              # Ignore incompatible_msrv checks for targets that run on nightly only anyway
+              extra_clippy_args: "-A clippy::incompatible_msrv"
 
     steps:
       - name: Checkout
@@ -40,7 +48,7 @@ jobs:
       - name: Run Clippy
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo clippy --all-targets --target ${{ matrix.target }} ${{ matrix.rust.args }} -- -D warnings
+        run: cargo clippy --all-targets --target ${{ matrix.target }} ${{ matrix.rust.args }} -- -D warnings ${{ matrix.extra_clippy_args }}
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }}
