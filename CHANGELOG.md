@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## UNRELEASED
 
 ### Added
-- Introduced a `serde` feature with (de)serialization support for
+- Introduced a `serde` feature with de-serialization support for
   `SystemTime`.
 
 
