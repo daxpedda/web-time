@@ -57,6 +57,12 @@
 //! let time = SystemTime::now();
 //! ```
 //!
+//! # Features
+//!
+//! Currently, the only feature is a `serde` feature, that implements
+//! `serde::Deserialize` and `serde::Serialize` for
+//! `web_time::SystemTime`.
+//!
 //! # MSRV
 //!
 //! As this library heavily relies on [`wasm-bindgen`] the MSRV depends on it.
