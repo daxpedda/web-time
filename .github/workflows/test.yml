@@ -14,7 +14,8 @@ env:
 
 jobs:
   build-test:
-    name: Build & Test
+    # Skip the `extra_cmd` field in the name, so that it's easy to change the `cargo update` for MSRV without requiring github reconfiguration
+    name: "Build & Test (${{ matrix.os }}, ${{ matrix.rust.version }}, ${{ matrix.rust.msrv }}, ${{ matrix.rust.component }}, ${{ matrix.rust.flags }}, ${{ matrix.rust.args }}, ${{ matrix.target.target }}, ${{ matrix.target.native }})"
 
     runs-on: ${{ matrix.os }}
 
