@@ -36,7 +36,7 @@ jobs:
               flags: "-Ctarget-feature=+atomics,+bulk-memory"
               args: "-Zbuild-std=panic_abort,std"
               # Ignore incompatible_msrv checks for targets that run on nightly only anyway
-              extra_clippy_args: "-A clippy::incompatible_msrv"
+            extra_clippy_args: "-A clippy::incompatible_msrv"
 
     steps:
       - name: Checkout
