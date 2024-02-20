@@ -1,4 +1,4 @@
-//! Serde serialization and deserialization for `SystemTime`.
+//! `Serde` serialization and de-serialization for `SystemTime`.
 //! It aims to be compatible with the `serde`'s implementation for
 //! `std::time::SystemTime`.
 //! This module is only available when the `serde` feature is enabled.
