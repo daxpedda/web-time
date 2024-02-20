@@ -2,6 +2,11 @@
 //! It aims to be compatible with the `serde`'s implementation for
 //! `std::time::SystemTime`.
 //! This module is only available when the `serde` feature is enabled.
+//!
+//! The `Serialize` implementation was copied from [`serde`'s
+//! upstream](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/ser/impls.rs#L730-L747),
+//! as well as [the `Deserialize`
+//! one](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/de/impls.rs#L2168-L2314)
 
 use std::fmt::{self, Formatter};
 use std::time::Duration;
@@ -10,8 +15,9 @@ use super::SystemTime;
 
 impl serde::Serialize for SystemTime {
 	fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-		use serde::ser::{Error, SerializeStruct};
+		use serde::ser::SerializeStruct;
 
+		// CHANGED: we already have the `Duration` available in `self.0`
 		let duration_since_epoch = self.0;
 		let mut state = serializer.serialize_struct("SystemTime", 2)?;
 		state.serialize_field("secs_since_epoch", &duration_since_epoch.as_secs())?;
@@ -37,6 +43,7 @@ impl<'de> serde::Deserialize<'de> for SystemTime {
 			{
 				struct FieldVisitor;
 
+				// CHANGED: using '_ lifetime to avoid warning with recent compilers
 				impl Visitor<'_> for FieldVisitor {
 					type Value = Field;
 
@@ -155,6 +162,7 @@ impl<'de> serde::Deserialize<'de> for SystemTime {
 
 		const FIELDS: &[&str] = &["secs_since_epoch", "nanos_since_epoch"];
 		let duration = deserializer.deserialize_struct("SystemTime", FIELDS, DurationVisitor)?;
+		// CHANGED: we can put the duration directly here, and do not have to go through addition
 		let ret = Ok(SystemTime(duration));
 		ret
 	}

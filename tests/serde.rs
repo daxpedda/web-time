@@ -8,7 +8,7 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
 /// (De)serialization of [`SystemTime`].
-async fn system_time() {
+fn system_time() {
 	let time = SystemTime::now();
 	let serialized = serde_json::to_string(&time).unwrap();
 	let deserialized: SystemTime = serde_json::from_str(&serialized).unwrap();
@@ -17,7 +17,7 @@ async fn system_time() {
 
 #[wasm_bindgen_test]
 /// (De)serialization of [`SystemTime`] with [`UNIX_EPOCH`].
-async fn unix_epoch() {
+fn unix_epoch() {
 	let time = SystemTime::UNIX_EPOCH;
 	let serialized = serde_json::to_string(&time).unwrap();
 	let deserialized: SystemTime = serde_json::from_str(&serialized).unwrap();
@@ -26,7 +26,7 @@ async fn unix_epoch() {
 
 #[wasm_bindgen_test]
 /// (De)serialization compatibility with [`std::time::SystemTime`].
-async fn std_compatibility() {
+fn std_compatibility() {
 	let time = SystemTime::now();
 	let serialized = serde_json::to_string(&time).unwrap();
 	let deserialized: std::time::SystemTime = serde_json::from_str(&serialized).unwrap();
