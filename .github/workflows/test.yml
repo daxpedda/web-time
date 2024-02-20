@@ -26,8 +26,8 @@ jobs:
         os:
           - ubuntu-latest
         rust:
-          - { version: "1.60", msrv: true, component: "", flags: "", args: "" }
-          - { version: stable, msrv: false, component: "", flags: "", args: "" }
+          - { version: "1.60", msrv: true, component: "", flags: "", args: "", extra_cmd: "cargo update -p bumpalo --precise 3.14.0" }
+          - { version: stable, msrv: false, component: "", flags: "", args: "", extra_cmd: "" }
         target:
           - { target: x86_64-unknown-linux-gnu, native: true }
           - { target: wasm32-unknown-unknown, native: false }
@@ -52,6 +52,8 @@ jobs:
         run: |
           rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
+      - name: Set package versions where required
+        run: ${{ matrix.rust.extra_cmd }}
       - name: Build
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
