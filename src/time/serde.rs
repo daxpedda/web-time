@@ -162,7 +162,8 @@ impl<'de> serde::Deserialize<'de> for SystemTime {
 
 		const FIELDS: &[&str] = &["secs_since_epoch", "nanos_since_epoch"];
 		let duration = deserializer.deserialize_struct("SystemTime", FIELDS, DurationVisitor)?;
-		// CHANGED: we can put the duration directly here, and do not have to go through addition
+		// CHANGED: we can put the duration directly here, and do not have to go through
+		// addition
 		let ret = Ok(SystemTime(duration));
 		ret
 	}
