@@ -52,6 +52,9 @@ jobs:
         run: |
           rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
+      - name: Fix MSRV dependencies
+        if: matrix.rust.msrv == true
+        run: cargo update -p bumpalo --precise 3.14.0
       - name: Build
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
