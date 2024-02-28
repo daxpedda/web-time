@@ -14,6 +14,7 @@ fn main() {
 	clippy::min_ident_chars,
 	clippy::unwrap_used
 )]
+#[allow(unknown_lints, clippy::incompatible_msrv)]
 fn main() {
 	use std::time::Duration;
 	use std::{array, hint};
