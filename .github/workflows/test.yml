@@ -25,22 +25,28 @@ jobs:
       matrix:
         os:
           - ubuntu-latest
+          - macos-latest
         rust:
           - { version: "1.60", msrv: true, component: "", flags: "", args: "" }
           - { version: stable, msrv: false, component: "", flags: "", args: "" }
+          - { version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
         target:
-          - { target: x86_64-unknown-linux-gnu, native: true }
           - { target: wasm32-unknown-unknown, native: false }
+        features:
+          - { features: "" }
+          - { features: --all-features }
         include:
-          - os: macos-latest
-            rust: { version: stable, msrv: false, component: "", flags: "", args: "" }
-            target: { target: wasm32-unknown-unknown, native: false }
           - os: ubuntu-latest
-            rust: { version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
-            target: { target: wasm32-unknown-unknown, native: false }
+            rust: { version: "1.60", msrv: true, component: "", flags: "", args: "" }
+            target: { target: x86_64-unknown-linux-gnu, native: true }
+            features: { features: "" }
+          - os: ubuntu-latest
+            rust: { version: stable, msrv: false, component: "", flags: "", args: "" }
+            target: { target: x86_64-unknown-linux-gnu, native: true }
+            features: { features: "" }
+        exclude:
           - os: macos-latest
-            rust: { version: nightly, msrv: false, component: --component rust-src, flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
-            target: { target: wasm32-unknown-unknown, native: false }
+            rust: { version: "1.60", msrv: true, component: "", flags: "", args: "" }
 
     steps:
       - name: Checkout
@@ -58,13 +64,13 @@ jobs:
       - name: Build
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo build --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
+        run: cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
       - name: Documentation
         if: matrix.os == 'ubuntu-latest'
         env:
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo doc --no-deps --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
+        run: cargo doc --no-deps ${{ matrix.features.features }} --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
       - name: Test
         if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == true
         run: cargo test --all-targets --no-fail-fast
@@ -73,19 +79,19 @@ jobs:
         env:
           CHROMEDRIVER: chromedriver
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo test --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
+        run: cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
       - name: Test on Firefox
         if: matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == false
         env:
           GECKODRIVER: geckodriver
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo test --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
+        run: cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
       - name: Test on Safari
         if: matrix.rust.msrv == false && matrix.os == 'macos-latest'
         env:
           SAFARIDRIVER: safaridriver
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo test --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
+        run: cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{ matrix.target.target }} ${{ matrix.rust.args }}
       - name: Documentation Test
         if: matrix.rust.msrv == false && matrix.target.native == true && matrix.os == 'ubuntu-latest'
         run: cargo test --doc --no-fail-fast
@@ -107,6 +113,9 @@ jobs:
         target:
           - x86_64-unknown-linux-gnu
           - wasm32-unknown-unknown
+        features:
+          - { features: "" }
+          - { features: --all-features }
 
     steps:
       - name: Checkout
@@ -120,4 +129,4 @@ jobs:
       - name: Build
         run: |
           cargo +nightly update -Z minimal-versions
-          cargo build --target ${{ matrix.target }}
+          cargo build ${{ matrix.features.features }} --target ${{ matrix.target }}

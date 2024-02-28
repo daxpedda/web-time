@@ -26,9 +26,14 @@ jobs:
           - wasm32-unknown-unknown
         rust:
           - { version: stable, component: "", rustflags: "", args: "" }
+          - { version: nightly, component: ",rust-src", flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
+        features:
+          - { features: "" }
+          - { features: --all-features }
         include:
-          - target: wasm32-unknown-unknown
-            rust: { version: nightly, component: ",rust-src", flags: "-Ctarget-feature=+atomics,+bulk-memory", args: "-Zbuild-std=panic_abort,std" }
+          - target: x86_64-unknown-linux-gnu
+            rust: { version: stable, component: "", rustflags: "", args: "" }
+            features: { features: "" }
 
     steps:
       - name: Checkout
@@ -40,8 +45,8 @@ jobs:
       - name: Run Clippy
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
-        run: cargo clippy --all-targets --target ${{ matrix.target }} ${{ matrix.rust.args }} -- -D warnings
+        run: cargo clippy --all-targets ${{ matrix.features.features }} --target ${{ matrix.target }} ${{ matrix.rust.args }} -- -D warnings
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }}
-        run: cargo doc --no-deps --document-private-items --target ${{ matrix.target }} ${{ matrix.rust.args }}
+        run: cargo doc --no-deps --document-private-items ${{ matrix.features.features }} --target ${{ matrix.target }} ${{ matrix.rust.args }}

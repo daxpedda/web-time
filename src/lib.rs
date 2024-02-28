@@ -57,6 +57,13 @@
 //! let time = SystemTime::now();
 //! ```
 //!
+//! # Features
+//!
+//! ## `serde`
+//!
+//! Implements [`serde::Deserialize`] and [`serde::Serialize`] for
+//! [`SystemTime`].
+//!
 //! # MSRV
 //!
 //! As this library heavily relies on [`wasm-bindgen`] the MSRV depends on it.
@@ -115,6 +122,11 @@
 //! [`performance.now()`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
 //! [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
 //! [`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property
+#![cfg_attr(
+	any(not(feature = "serde"), not(target_family = "wasm")),
+	doc = "[`serde::Deserialize`]: https://docs.rs/serde/1/serde/trait.Deserialize.html",
+	doc = "[`serde::Serialize`]: https://docs.rs/serde/1/serde/trait.Serialize.html"
+)]
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
