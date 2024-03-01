@@ -108,10 +108,10 @@
 //! license, shall be dual licensed as above, without any additional terms or
 //! conditions.
 //!
-//! [CHANGELOG]: https://github.com/daxpedda/web-time/blob/v1.0.0/CHANGELOG.md
-//! [CONTRIBUTING]: https://github.com/daxpedda/web-time/blob/v1.0.0/CONTRIBUTING.md
-//! [LICENSE-MIT]: https://github.com/daxpedda/web-time/blob/v1.0.0/LICENSE-MIT
-//! [LICENSE-APACHE]: https://github.com/daxpedda/web-time/blob/v1.0.0/LICENSE-APACHE
+//! [CHANGELOG]: https://github.com/daxpedda/web-time/blob/v1.1.0/CHANGELOG.md
+//! [CONTRIBUTING]: https://github.com/daxpedda/web-time/blob/v1.1.0/CONTRIBUTING.md
+//! [LICENSE-MIT]: https://github.com/daxpedda/web-time/blob/v1.1.0/LICENSE-MIT
+//! [LICENSE-APACHE]: https://github.com/daxpedda/web-time/blob/v1.1.0/LICENSE-APACHE
 //! [worklet]: https://developer.mozilla.org/en-US/docs/Web/API/Worklet
 //! [`Date.now()`]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now
 //! [`Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html

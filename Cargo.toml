@@ -9,7 +9,7 @@ license = "MIT OR Apache-2.0"
 name = "web-time"
 repository = "https://github.com/daxpedda/web-time"
 rust-version = "1.60"
-version = "1.0.0"
+version = "1.1.0"
 
 [features]
 serde = ["dep:serde"]
