@@ -39,7 +39,7 @@ jobs:
           RUSTDOCFLAGS: --crate-version main --cfg=docsrs
         run: cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target wasm32-unknown-unknown --all-features
       - name: Setup Pages
-        uses: actions/configure-pages@v4
+        uses: actions/configure-pages@v5
       - name: Fix permissions
         run: |
           chmod -c -R +rX "target/wasm32-unknown-unknown/doc" | while read line; do
