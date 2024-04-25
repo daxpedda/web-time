@@ -15,9 +15,9 @@ version = "1.1.0"
 serde = ["dep:serde"]
 
 [target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
-js-sys = "0.3.20"
+js-sys = "0.3.69"
 serde = { version = "1", optional = true }
-wasm-bindgen = { version = "0.2.70", default-features = false }
+wasm-bindgen = { version = "0.2.92", default-features = false }
 
 [dev-dependencies]
 static_assertions = "1"
