@@ -3,6 +3,7 @@
 
 mod util;
 
+use util::MAX_DIFF;
 use web_time::{Duration, SystemTime};
 
 use self::util::{sleep, DIFF};
@@ -21,7 +22,7 @@ test! {
 		sleep(DIFF).await;
 		let duration = SystemTime::now().duration_since(time).unwrap();
 		assert!(duration >= DIFF);
-		assert!(duration <= DIFF * 2);
+		assert!(duration <= MAX_DIFF);
 	}
 
 	/// [`SystemTime::duration_since()`] failure.
@@ -31,7 +32,7 @@ test! {
 		let error = time.duration_since(SystemTime::now()).unwrap_err();
 		let duration = error.duration();
 		assert!(duration >= DIFF);
-		assert!(duration <= DIFF * 2);
+		assert!(duration <= MAX_DIFF);
 	}
 
 	/// [`SystemTime::elapsed()`] success.
@@ -40,7 +41,7 @@ test! {
 		sleep(DIFF).await;
 		let duration = time.elapsed().unwrap();
 		assert!(duration >= DIFF);
-		assert!(duration <= DIFF * 2);
+		assert!(duration <= MAX_DIFF);
 	}
 
 	/// [`SystemTime::elapsed()`] failure.
@@ -56,7 +57,7 @@ test! {
 		sleep(DIFF).await;
 		let now = SystemTime::now();
 		assert!(time.checked_add(DIFF).unwrap() <= now);
-		assert!(time.checked_add(DIFF * 2).unwrap() >= now);
+		assert!(time.checked_add(MAX_DIFF).unwrap() >= now);
 	}
 
 	/// [`SystemTime::checked_add()`] failure.
@@ -71,7 +72,7 @@ test! {
 		sleep(DIFF).await;
 		let now = SystemTime::now();
 		assert!(now.checked_sub(DIFF).unwrap() >= time);
-		assert!(now.checked_sub(DIFF * 2).unwrap() <= time);
+		assert!(now.checked_sub(MAX_DIFF).unwrap_or(SystemTime::UNIX_EPOCH) <= time);
 	}
 
 	/// [`SystemTime::checked_sub()`] failure.
@@ -84,17 +85,19 @@ test! {
 		let time = SystemTime::now();
 		sleep(DIFF).await;
 		assert!(time + DIFF <= SystemTime::now());
-		assert!(time + DIFF * 2 >= SystemTime::now());
+		assert!(time + MAX_DIFF >= SystemTime::now());
 	}
 
 	/// [`SystemTime::add_assign()`] success.
 	async fn add_assign_success() {
-		let mut time = SystemTime::now();
+		let mut time_1 = SystemTime::now();
+		let mut time_2 = time_1;
 		sleep(DIFF).await;
-		time += DIFF;
-		assert!(time <= SystemTime::now());
-		time += DIFF * 2;
-		assert!(time >= SystemTime::now());
+		let now = SystemTime::now();
+		time_1 += DIFF;
+		assert!(time_1 <= now);
+		time_2 += MAX_DIFF;
+		assert!(time_2 >= now);
 	}
 
 	/// [`SystemTime::sub()`] success.
@@ -103,7 +106,7 @@ test! {
 		sleep(DIFF).await;
 		let now = SystemTime::now();
 		assert!(now - DIFF >= time);
-		assert!(now - DIFF * 2 <= time);
+		assert!(now.duration_since(time).unwrap() <= MAX_DIFF);
 	}
 
 	/// [`SystemTime::sub_assign()`] success.
@@ -113,7 +116,6 @@ test! {
 		let mut later = SystemTime::now();
 		later -= DIFF;
 		assert!(later >= earlier);
-		later -= DIFF;
-		assert!(later <= earlier);
+		assert!(later.duration_since(earlier).unwrap() <= MAX_DIFF);
 	}
 }

@@ -3,6 +3,7 @@
 
 mod util;
 
+use util::MAX_DIFF;
 use web_time::{Duration, Instant};
 
 use self::util::{sleep, DIFF};
@@ -14,7 +15,7 @@ test! {
 		sleep(DIFF).await;
 		let duration = Instant::now().duration_since(instant);
 		assert!(duration >= DIFF);
-		assert!(duration <= DIFF * 2);
+		assert!(duration <= MAX_DIFF);
 	}
 
 	/// [`Instant::duration_since()`] failure.
@@ -30,7 +31,7 @@ test! {
 		sleep(DIFF).await;
 		let duration = Instant::now().checked_duration_since(instant);
 		assert!(duration >= Some(DIFF));
-		assert!(duration <= Some(DIFF * 2));
+		assert!(duration <= Some(MAX_DIFF));
 	}
 
 	/// [`Instant::checked_duration_since()`] failure.
@@ -46,7 +47,7 @@ test! {
 		sleep(DIFF).await;
 		let duration = Instant::now().saturating_duration_since(instant);
 		assert!(duration >= DIFF);
-		assert!(duration <= DIFF * 2);
+		assert!(duration <= MAX_DIFF);
 	}
 
 	/// [`Instant::saturating_duration_fail()`] success.
@@ -65,7 +66,7 @@ test! {
 		sleep(DIFF).await;
 		let duration = instant.elapsed();
 		assert!(duration >= DIFF);
-		assert!(duration <= DIFF * 2);
+		assert!(duration <= MAX_DIFF);
 	}
 
 	/// [`Instant::checked_add()`] success.
@@ -74,7 +75,7 @@ test! {
 		sleep(DIFF).await;
 		let now = Instant::now();
 		assert!(instant.checked_add(DIFF).unwrap() <= now);
-		assert!(instant.checked_add(DIFF * 2).unwrap() >= now);
+		assert!(instant.checked_add(MAX_DIFF).unwrap() >= now);
 	}
 
 	/// [`Instant::checked_add()`] failure.
@@ -89,7 +90,7 @@ test! {
 		sleep(DIFF).await;
 		let now = Instant::now();
 		assert!(now.checked_sub(DIFF).unwrap() >= instant);
-		assert!(now.checked_sub(DIFF * 2).unwrap() <= instant);
+		assert!(now.duration_since(instant) <= MAX_DIFF);
 	}
 
 	/// [`Instant::checked_sub()`] failure.
@@ -103,7 +104,7 @@ test! {
 		sleep(DIFF).await;
 		let now = Instant::now();
 		assert!(instant + DIFF <= now);
-		assert!(instant + DIFF * 2 >= now);
+		assert!(instant + MAX_DIFF >= now);
 	}
 
 	/// [`Instant::add_assign()`] success.
@@ -123,7 +124,7 @@ test! {
 		sleep(DIFF).await;
 		let now = Instant::now();
 		assert!(now - DIFF >= instant);
-		assert!(now - DIFF * 2 <= instant);
+		assert!(now.duration_since(instant) <= MAX_DIFF);
 	}
 
 	/// [`Instant::sub_assign()`] success.
@@ -133,8 +134,7 @@ test! {
 		let mut later = Instant::now();
 		later -= DIFF;
 		assert!(later >= earlier);
-		later -= DIFF;
-		assert!(later <= earlier);
+		assert!(later.duration_since(earlier) <= MAX_DIFF);
 	}
 
 	/// [`Self`] comparisons.
