@@ -19,6 +19,7 @@ pub trait SystemTimeExt {
 	/// incompatible APIs of other dependencies, care should be taken that the
 	/// dependency in question doesn't call [`std::time::SystemTime::now()`]
 	/// internally, which would panic.
+	#[allow(unused_qualifications)]
 	fn to_std(self) -> std::time::SystemTime;
 
 	/// Convert [`std::time::SystemTime`] to
@@ -32,14 +33,17 @@ pub trait SystemTimeExt {
 	/// incompatible APIs of other dependencies, care should be taken that the
 	/// dependency in question doesn't call [`std::time::SystemTime::now()`]
 	/// internally, which would panic.
+	#[allow(unused_qualifications)]
 	fn from_std(time: std::time::SystemTime) -> SystemTime;
 }
 
 impl SystemTimeExt for SystemTime {
+	#[allow(unused_qualifications)]
 	fn to_std(self) -> std::time::SystemTime {
 		StdSystemTime::UNIX_EPOCH + self.0
 	}
 
+	#[allow(unused_qualifications)]
 	fn from_std(time: std::time::SystemTime) -> SystemTime {
 		Self::UNIX_EPOCH
 			+ time
