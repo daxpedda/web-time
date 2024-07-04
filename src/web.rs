@@ -37,13 +37,16 @@ pub trait SystemTimeExt {
 
 impl SystemTimeExt for SystemTime {
 	fn to_std(self) -> std::time::SystemTime {
-		StdSystemTime::UNIX_EPOCH + self.0
+		StdSystemTime::UNIX_EPOCH
+			+ self
+				.duration_since(Self::UNIX_EPOCH)
+				.expect("found `SystemTime` earlier than unix epoch")
 	}
 
 	fn from_std(time: std::time::SystemTime) -> SystemTime {
 		Self::UNIX_EPOCH
 			+ time
 				.duration_since(StdSystemTime::UNIX_EPOCH)
-				.expect("found `SystemTime` earlier then unix epoch")
+				.expect("found `SystemTime` earlier than unix epoch")
 	}
 }
