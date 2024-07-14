@@ -47,6 +47,9 @@ futures-util = { version = "0.3", default-features = false }
 wasm-worker = { git = "https://github.com/daxpedda/wasm-worker", rev = "8b3e6324bdb5d44d5565b6981ce74ee773da9e3f" }
 web-sys = { version = "0.3", features = ["WorkerGlobalScope"] }
 
+[patch.crates-io]
+pollster = { git = "https://github.com/zesterer/pollster", rev = "58f420e1ac19def81183ca4140470e4bb956fd11" }
+
 [profile.bench]
 codegen-units = 1
 lto = true

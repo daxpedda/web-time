@@ -60,7 +60,9 @@ jobs:
           rustup default ${{ matrix.rust.version }}
       - name: Fix MSRV dependencies
         if: matrix.rust.msrv == true
-        run: cargo update -p bumpalo --precise 3.14.0
+        run: |
+          cargo update -p bumpalo --precise 3.14.0
+          cargo update -p syn --precise 2.0.67
       - name: Build
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
