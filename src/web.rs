@@ -44,6 +44,6 @@ impl SystemTimeExt for SystemTime {
 		Self::UNIX_EPOCH
 			+ time
 				.duration_since(StdSystemTime::UNIX_EPOCH)
-				.expect("found `SystemTime` earlier then unix epoch")
+				.expect("found `SystemTime` earlier than unix epoch")
 	}
 }
