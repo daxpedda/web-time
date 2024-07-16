@@ -44,8 +44,9 @@ which case multiple ecosystems could be supported.
 
 Currently a known bug is affecting browsers on operating system other then
 Windows. This bug prevents [`Instant`] from continuing to tick when the
-context is asleep. This doesn't necessarily conflict with Rusts requirements
-of [`Instant`], but might still be unexpected.
+context is asleep. While this doesn't conflict with Rusts requirements of
+[`Instant`], by chance Rust's Std
+[has the same problem](https://github.com/rust-lang/rust/issues/79462).
 
 See [the MDN documentation on this](https://developer.mozilla.org/en-US/docs/Web/API/Performance/now#ticking_during_sleep) for more information.
 
