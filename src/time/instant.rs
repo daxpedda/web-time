@@ -81,23 +81,23 @@ impl Add<Duration> for Instant {
 	/// This function may panic if the resulting point in time cannot be
 	/// represented by the underlying data structure. See
 	/// [`Instant::checked_add`] for a version without panic.
-	fn add(self, other: Duration) -> Self {
-		self.checked_add(other)
+	fn add(self, rhs: Duration) -> Self {
+		self.checked_add(rhs)
 			.expect("overflow when adding duration to instant")
 	}
 }
 
 impl AddAssign<Duration> for Instant {
-	fn add_assign(&mut self, other: Duration) {
-		*self = *self + other;
+	fn add_assign(&mut self, rhs: Duration) {
+		*self = *self + rhs;
 	}
 }
 
 impl Sub<Duration> for Instant {
 	type Output = Self;
 
-	fn sub(self, other: Duration) -> Self {
-		self.checked_sub(other)
+	fn sub(self, rhs: Duration) -> Self {
+		self.checked_sub(rhs)
 			.expect("overflow when subtracting duration from instant")
 	}
 }
@@ -107,14 +107,14 @@ impl Sub<Self> for Instant {
 
 	/// Returns the amount of time elapsed from another instant to this one,
 	/// or zero duration if that instant is later than this one.
-	fn sub(self, other: Self) -> Duration {
-		self.duration_since(other)
+	fn sub(self, rhs: Self) -> Duration {
+		self.duration_since(rhs)
 	}
 }
 
 impl SubAssign<Duration> for Instant {
-	fn sub_assign(&mut self, other: Duration) {
-		*self = *self - other;
+	fn sub_assign(&mut self, rhs: Duration) {
+		*self = *self - rhs;
 	}
 }
 
@@ -171,12 +171,12 @@ mod test {
 	}
 
 	impl PartialEq<Duration> for ControlDuration {
-		fn eq(&self, duration: &Duration) -> bool {
+		fn eq(&self, other: &Duration) -> bool {
 			// Our control `Duration` has perfect accuracy, unlike
 			// [`super::time_stamp_to_duration()`].
-			if self.0 == *duration {
+			if self.0 == *other {
 				true
-			} else if let Some(diff) = self.0.checked_sub(*duration) {
+			} else if let Some(diff) = self.0.checked_sub(*other) {
 				diff == Duration::from_nanos(1)
 			} else {
 				false

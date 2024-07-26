@@ -1,3 +1,4 @@
+allow-renamed-params-for = ["..", "core::fmt::Debug", "core::fmt::Display"]
 allow-unwrap-in-tests = true
 avoid-breaking-exported-api = false
 semicolon-outside-block-ignore-multiline = true
