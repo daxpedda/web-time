@@ -26,7 +26,7 @@ jobs:
       contents: read
       pages: write
       id-token: write
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +37,9 @@ jobs:
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: --crate-version main --cfg=docsrs
-        run: cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target wasm32-unknown-unknown --all-features
+        run:
+          cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target
+          wasm32-unknown-unknown --all-features
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Fix permissions

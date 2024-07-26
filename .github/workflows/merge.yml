@@ -21,9 +21,9 @@ jobs:
       github.event.comment.body == '/fast-forward-merge'
 
     permissions:
-        actions: write
-        contents: write
-        pull-requests: write
+      actions: write
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout

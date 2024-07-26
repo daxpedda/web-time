@@ -42,3 +42,16 @@ jobs:
           tool: taplo-cli
       - name: Run Taplo
         run: taplo fmt --check
+
+  prettier:
+    name: Prettier
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Prettier
+        run: sudo npm i -g prettier
+      - name: Run Prettier
+        run: prettier . --check
