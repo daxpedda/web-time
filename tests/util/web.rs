@@ -30,6 +30,7 @@ impl Future for Sleep {
 }
 
 /// Sleeps for the given [`Duration`].
+#[allow(unused)]
 pub(crate) fn sleep(duration: Duration) -> Sleep {
 	#[cfg(target_feature = "atomics")]
 	enum Global {

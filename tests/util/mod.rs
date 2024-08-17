@@ -6,8 +6,10 @@ mod web;
 use web_time::Duration;
 
 #[cfg(not(target_family = "wasm"))]
+#[allow(unused)]
 pub(crate) use self::std::*;
 #[cfg(target_family = "wasm")]
+#[allow(unused)]
 pub(crate) use self::web::*;
 
 pub(crate) const DIFF: Duration = Duration::from_millis(50);

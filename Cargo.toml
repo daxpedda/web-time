@@ -23,6 +23,9 @@ wasm-bindgen = { version = "0.2.70", default-features = false }
 opt-level = 1
 
 [dev-dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_test = "1"
 static_assertions = "1"
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
@@ -31,7 +34,6 @@ pollster = { version = "0.3", features = ["macro"] }
 [target.'cfg(target_family = "wasm")'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
-serde_json = "1"
 wasm-bindgen-futures = "0.4"
 wasm-bindgen-test = "0.3"
 web-sys = { version = "0.3", features = [
