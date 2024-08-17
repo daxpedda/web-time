@@ -69,4 +69,4 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh workflow run Documentation -r ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }}
+          gh workflow run "Coverage & Documentation" -r ${{ fromJSON(steps.pr.outputs.base_ref).baseRefName }}

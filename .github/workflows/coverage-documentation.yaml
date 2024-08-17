@@ -1,0 +1,238 @@
+name: Coverage & Documentation
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  coverage:
+    name: Test Coverage ${{ matrix.mt.description }}
+
+    runs-on: ubuntu-24.04
+
+    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        mt:
+          - { id: 0 }
+          - {
+              id: 1,
+              description: with Atomics,
+              component: ",rust-src",
+              cflags: -matomics -mbulk-memory,
+              flags: "-Ctarget-feature=+atomics,+bulk-memory",
+              args: "-Zbuild-std=panic_abort,std",
+            }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install `wasm-bindgen-cli`
+        uses: taiki-e/cache-cargo-install-action@v2
+        with:
+          tool: wasm-bindgen-cli
+      - name: Install LLVM v18
+        run: sudo apt-get install llvm-18
+      - name: Install Rust nightly
+        run: |
+          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component llvm-tools-preview${{ matrix.mt.component }}
+          rustup default nightly
+      - name: Test
+        env:
+          CHROMEDRIVER: chromedriver
+          CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
+          CARGO_HOST_RUSTFLAGS: --cfg=wasm_bindgen_unstable_test_coverage
+          RUSTFLAGS:
+            -Cinstrument-coverage -Zno-profiler-runtime --emit=llvm-ir
+            --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
+          WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT: coverage-input
+        run: |
+          mkdir coverage-input
+          cargo test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests
+      - name: Prepare Object Files
+        env:
+          CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
+          CARGO_HOST_RUSTFLAGS: --cfg=wasm_bindgen_unstable_test_coverage
+          RUSTFLAGS:
+            -Cinstrument-coverage -Zno-profiler-runtime --emit=llvm-ir
+            --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
+        run: |
+          mkdir coverage-output
+          crate_name=web_time
+          IFS=$'\n'
+          for file in $(
+            cargo test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests --no-run --message-format=json | \
+            jq -r "select(.reason == \"compiler-artifact\") | (select(.target.kind == [\"test\"]) // select(.target.name == \"$crate_name\")) | .filenames[0]"
+          )
+          do
+            if [[ ${file##*.} == "rlib" ]]; then
+                base=$(basename $file .rlib)
+                file=$(dirname $file)/${base#"lib"}.ll
+            else
+                file=$(dirname $file)/$(basename $file .wasm).ll
+            fi
+
+            input=coverage-input/$(basename $file)
+            cp $file $input
+
+            perl -i -p0e 's/(^define.*?$).*?^}/$1\nstart:\n  unreachable\n}/gms' $input
+            counter=1
+            while (( counter != 0 )); do
+                counter=$(perl -i -p0e '$c+= s/(^(define|declare)(,? [^\n ]+)*),? range\(.*?\)/$1/gm; END{print "$c"}' $input)
+            done
+
+            clang-18 $input -Wno-override-module -c -o coverage-output/$(basename $input .ll).o
+          done
+      - name: Merge Profile Data
+        run:
+          llvm-profdata-18 merge -sparse coverage-input/*.profraw -o
+          coverage-output/coverage.profdata
+      - name: Upload Test Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage-${{ matrix.mt.id }}
+          path: coverage-output
+          retention-days: 1
+          if-no-files-found: error
+
+  collect-coverage:
+    name: Collect Test Coverage
+
+    needs: coverage
+
+    runs-on: ubuntu-24.04
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install LLVM v18
+        run: sudo apt-get install llvm-18
+      - name: Install `rustfilt`
+        uses: taiki-e/cache-cargo-install-action@v2
+        with:
+          tool: rustfilt
+      - name: Download Test Coverage
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-coverage-*
+          path: coverage-input
+      - name: Merge Profile Data
+        run:
+          llvm-profdata-18 merge -sparse coverage-input/**/coverage.profdata -o
+          coverage-input/coverage.profdata
+      - name: Export Code Coverage Report
+        run: |
+          mkdir coverage-output
+          objects=()
+          for file in $(ls coverage-input/**/*.o)
+          do
+              objects+=(-object $file)
+          done
+          llvm-cov-18 show -show-instantiations=false -Xdemangler=rustfilt -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
+          llvm-cov-18 export -format=lcov -skip-functions -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src > coverage-output/coverage.lcov
+          llvm-cov-18 export -format=text -summary-only -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src | \
+          printf '{ "coverage": "%.2f%%" }' $(jq '.data[0].totals.functions.percent') > coverage-output/coverage.json
+      - name: Download Previous Coverage Report
+        run: wget https://daxpedda.github.io/wasm-worker/coverage/coverage.lcov
+      - name: Report Coverage in Job Summary
+        # See <https://github.com/romeovs/lcov-reporter-action/pull/68>
+        uses: 06393993/lcov-reporter-action@24d48ff28930b87e67d0df34283153b04a76f166
+        with:
+          lcov-file: coverage-output/coverage.lcov
+          lcov-base: coverage.lcov
+          filter-changed-files: true
+          title: Test Coverage
+          post-to: job-summary
+      - name: Upload Test Coverage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-coverage
+          path: coverage-output
+          retention-days: 1
+          if-no-files-found: error
+
+  document:
+    name: Document
+
+    runs-on: ubuntu-latest
+
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust nightly
+        run: |
+          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown
+          rustup default nightly
+      - name: Run Rustdoc
+        env:
+          RUSTDOCFLAGS: --crate-version main --cfg=docsrs
+        run:
+          cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target
+          wasm32-unknown-unknown --all-features
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+      - name: Fix permissions
+        run: |
+          chmod -c -R +rX "target/wasm32-unknown-unknown/doc" | while read line; do
+            echo "::warning title=Invalid file permissions automatically fixed::$line"
+          done
+      - name: Upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: documentation
+          path: target/wasm32-unknown-unknown/doc
+          retention-days: 1
+          if-no-files-found: error
+
+  deploy:
+    name: Deploy
+
+    needs: [collect-coverage, document]
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}doc/web_time
+
+    runs-on: ubuntu-latest
+
+    if:
+      github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.ref_name ==
+      'main')
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download Test Coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: test-coverage
+          path: page/coverage
+      - name: Download Documentation
+        uses: actions/download-artifact@v4
+        with:
+          name: documentation
+          path: page/doc
+      - name: Upload Page Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: page
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

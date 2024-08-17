@@ -3,7 +3,8 @@
 [![Crates.io Version](https://img.shields.io/crates/v/web-time.svg)](https://crates.io/crates/web-time)
 [![Live Build Status](https://img.shields.io/github/check-runs/daxpedda/web-time/main?label=CI)](https://github.com/daxpedda/web-time/actions?query=branch%3Amain)
 [![Docs.rs Documentation](https://img.shields.io/docsrs/web-time?label=docs.rs)](https://docs.rs/crate/web-time)
-[![Main Documentation](https://img.shields.io/github/actions/workflow/status/daxpedda/web-time/documentation.yaml?branch=main&label=main%20docs)](https://daxpedda.github.io/web-time/web_time/index.html)
+[![Main Documentation](https://img.shields.io/github/actions/workflow/status/daxpedda/web-time/coverage-documentation.yaml?branch=main&label=main%20docs)](https://daxpedda.github.io/web-time/doc/web_time)
+[![Test Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fdaxpedda.github.io%2Fweb-time%2Fcoverage%2Fcoverage.json&query=%24.coverage&label=Test%20Coverage)](https://daxpedda.github.io/web-time/coverage)
 
 ## Description
 

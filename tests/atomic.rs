@@ -5,6 +5,7 @@ mod util;
 
 use futures_channel::oneshot;
 use wasm_bindgen_test::wasm_bindgen_test;
+use web_thread::web;
 use web_time::{Duration, Instant};
 
 use self::util::{sleep, Flag, DIFF};
@@ -17,9 +18,9 @@ async fn basic() {
 
 	let flag = Flag::new();
 
-	wasm_worker::spawn_async({
+	web::spawn_async({
 		let flag = flag.clone();
-		move |context| async move {
+		move || async move {
 			let later = Instant::now();
 			assert!(earlier <= later, "{:?}", earlier - later);
 
@@ -32,7 +33,6 @@ async fn basic() {
 			assert!(earlier <= later, "{:?}", earlier - later);
 
 			flag.signal();
-			context.close();
 		}
 	});
 
@@ -47,9 +47,9 @@ async fn delay() {
 
 	let flag = Flag::new();
 
-	wasm_worker::spawn_async({
+	web::spawn_async({
 		let flag = flag.clone();
-		move |context| async move {
+		move || async move {
 			let later = Instant::now();
 			assert!(earlier <= later, "{:?}", earlier - later);
 
@@ -62,7 +62,6 @@ async fn delay() {
 			assert!(earlier <= later, "{:?}", earlier - later);
 
 			flag.signal();
-			context.close();
 		}
 	});
 
@@ -72,10 +71,7 @@ async fn delay() {
 #[wasm_bindgen_test]
 async fn worker() {
 	let (sender, receiver) = oneshot::channel();
-	wasm_worker::spawn_async(move |context| async move {
-		sender.send(Instant::now()).unwrap();
-		context.close();
-	});
+	web::spawn_async(move || async move { sender.send(Instant::now()).unwrap() });
 
 	let earlier = receiver.await.unwrap();
 	let later = Instant::now();
