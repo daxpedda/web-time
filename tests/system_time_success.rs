@@ -118,4 +118,11 @@ test! {
 		assert!(later >= earlier);
 		assert!(later.duration_since(earlier).unwrap() <= MAX_DIFF);
 	}
+
+	/// [`SystemTime::elapsed()`] failure.
+	async fn error() {
+		let time = SystemTime::now() + DIFF;
+		let error = time.elapsed().unwrap_err();
+		assert_eq!(error.to_string(), "second time provided was later than self");
+	}
 }
