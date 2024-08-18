@@ -49,8 +49,10 @@ web-sys = { version = "0.3", features = [
 [target.'cfg(all(target_family = "wasm", target_feature = "atomics"))'.dev-dependencies]
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
-web-sys = { version = "0.3", features = ["WorkerGlobalScope"] }
-web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92354cbe0a0c07e71b9888be8b3e45999" }
+web-sys = { version = "0.3", features = ["OfflineAudioContext", "WorkerGlobalScope"] }
+web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92354cbe0a0c07e71b9888be8b3e45999", features = [
+	"audio-worklet",
+] }
 
 [patch.crates-io]
 pollster = { git = "https://github.com/zesterer/pollster", rev = "58f420e1ac19def81183ca4140470e4bb956fd11" }
