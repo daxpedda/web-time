@@ -138,6 +138,7 @@
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(wasm_bindgen_unstable_test_coverage, feature(coverage_attribute))]
 
 #[cfg(all(target_family = "wasm", target_os = "unknown"))]
 mod time;

@@ -135,6 +135,7 @@ fn time_stamp_to_duration(time_stamp: f64) -> Duration {
 }
 
 #[cfg(test)]
+#[cfg_attr(wasm_bindgen_unstable_test_coverage, coverage(off))]
 mod test {
 	use std::time::Duration;
 

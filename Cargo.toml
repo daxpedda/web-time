@@ -94,6 +94,7 @@ redundant_lifetimes = "warn"
 single_use_lifetimes = "warn"
 trivial_casts = "warn"
 trivial_numeric_casts = "warn"
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(wasm_bindgen_unstable_test_coverage)'] }
 unnameable_types = "warn"
 unreachable_pub = "warn"
 unsafe_code = "deny"
