@@ -28,7 +28,7 @@ jobs:
           - {
               id: 1,
               description: with Atomics,
-              component: ",rust-src",
+              component: --component rust-src,
               cflags: -matomics -mbulk-memory,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
               args: "-Zbuild-std=panic_abort,std",
@@ -38,14 +38,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install `wasm-bindgen-cli`
-        uses: taiki-e/cache-cargo-install-action@v2
+        uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli
-      - name: Install LLVM v18
-        run: sudo apt-get install llvm-18
+      - name: Install Clang v18
+        run: sudo apt-get install clang-18
       - name: Install Rust nightly
         run: |
-          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown --component llvm-tools-preview${{ matrix.mt.component }}
+          rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown ${{ matrix.mt.component }}
           rustup default nightly
       - name: Test
         env:
@@ -53,21 +53,21 @@ jobs:
           CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
           CARGO_HOST_RUSTFLAGS: --cfg=wasm_bindgen_unstable_test_coverage
           RUSTFLAGS:
-            -Cinstrument-coverage -Zno-profiler-runtime --emit=llvm-ir
+            -Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir
             --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
-          WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT: coverage-input
+          WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT: coverage-output
         run: |
-          mkdir coverage-input
+          mkdir coverage-output
           cargo test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests
       - name: Prepare Object Files
         env:
           CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
           CARGO_HOST_RUSTFLAGS: --cfg=wasm_bindgen_unstable_test_coverage
           RUSTFLAGS:
-            -Cinstrument-coverage -Zno-profiler-runtime --emit=llvm-ir
+            -Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir
             --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
         run: |
-          mkdir coverage-output
+          mkdir coverage-input
           crate_name=web_time
           IFS=$'\n'
           for file in $(
@@ -93,10 +93,6 @@ jobs:
 
             clang-18 $input -Wno-override-module -c -o coverage-output/$(basename $input .ll).o
           done
-      - name: Merge Profile Data
-        run:
-          llvm-profdata-18 merge -sparse coverage-input/*.profraw -o
-          coverage-output/coverage.profdata
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -117,10 +113,6 @@ jobs:
         uses: actions/checkout@v4
       - name: Install LLVM v18
         run: sudo apt-get install llvm-18
-      - name: Install `rustfilt`
-        uses: taiki-e/cache-cargo-install-action@v2
-        with:
-          tool: rustfilt
       - name: Download Test Coverage
         uses: actions/download-artifact@v4
         with:
@@ -128,31 +120,20 @@ jobs:
           path: coverage-input
       - name: Merge Profile Data
         run:
-          llvm-profdata-18 merge -sparse coverage-input/**/coverage.profdata -o
+          llvm-profdata-18 merge -sparse coverage-input/*/*.profraw -o
           coverage-input/coverage.profdata
       - name: Export Code Coverage Report
         run: |
           mkdir coverage-output
           objects=()
-          for file in $(ls coverage-input/**/*.o)
+          for file in $(ls coverage-input/*/*.o)
           do
               objects+=(-object $file)
           done
-          llvm-cov-18 show -show-instantiations=false -Xdemangler=rustfilt -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
-          llvm-cov-18 export -format=lcov -skip-functions -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src > coverage-output/coverage.lcov
+          llvm-cov-18 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
           llvm-cov-18 export -format=text -summary-only -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src | \
           printf '{ "coverage": "%.2f%%" }' $(jq '.data[0].totals.functions.percent') > coverage-output/coverage.json
-      - name: Download Previous Coverage Report
-        run: wget https://daxpedda.github.io/wasm-worker/coverage/coverage.lcov
-      - name: Report Coverage in Job Summary
-        # See <https://github.com/romeovs/lcov-reporter-action/pull/68>
-        uses: 06393993/lcov-reporter-action@24d48ff28930b87e67d0df34283153b04a76f166
-        with:
-          lcov-file: coverage-output/coverage.lcov
-          lcov-base: coverage.lcov
-          filter-changed-files: true
-          title: Test Coverage
-          post-to: job-summary
+          sed 's/<!doctype html>//' coverage-output/index.html | perl -p0e 's/<a[^>]*>((?!here).*?)<\/a>/$1/g' >> $GITHUB_STEP_SUMMARY
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
