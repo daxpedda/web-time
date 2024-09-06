@@ -24,14 +24,17 @@ jobs:
     strategy:
       matrix:
         mt:
-          - { id: 0 }
+          - {
+              id: 0,
+              description: without Atomics,
+              envs: "CARGO_TARGET_wasm32_unknown_unknown_RUSTDOCFLAGS= cargo +stable --verbose test",
+              toolchain: "stable",
+            }
           - {
               id: 1,
               description: with Atomics,
               component: --component rust-src,
-              cflags: -matomics -mbulk-memory,
-              flags: "-Ctarget-feature=+atomics,+bulk-memory",
-              args: "-Zbuild-std=panic_abort,std",
+              toolchain: "nightly",
             }
 
     steps:
@@ -46,7 +49,7 @@ jobs:
       - name: Install Rust nightly
         run: |
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown ${{ matrix.mt.component }}
-          rustup default nightly
+          rustup default ${{ matrix.mt.toolchain }}
       - name: Test
         env:
           CHROMEDRIVER: chromedriver
@@ -58,7 +61,7 @@ jobs:
           WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT: coverage-output
         run: |
           mkdir coverage-output
-          cargo test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests
+          ${{ matrix.mt.envs }} cargo +${{ matrix.mt.toolchain }} test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests
       - name: Prepare Object Files
         env:
           CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}

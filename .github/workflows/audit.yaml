@@ -26,4 +26,4 @@ jobs:
         with:
           tool: cargo-audit
       - name: Run Audit
-        run: cargo audit -D warnings
+        run: cargo +stable audit -D warnings

@@ -2,3 +2,5 @@
 /Cargo.lock
 /coverage-input
 /coverage-output
+/.vscode/*
+!.vscode/settings.json

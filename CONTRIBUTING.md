@@ -11,39 +11,21 @@ This crate has some code paths that depend on Wasm Atomics, which has some prere
 - Cargo's [`build-std`].
 - The `atomics` and `bulk-memory` target features.
 
-Example usage:
-
-```sh
-# Installing Rust nightly and necessary components:
-rustup toolchain install nightly --target wasm32-unknown-unknown --component rust-src
-# Example `cargo build` usage:
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build -Zbuild-std=panic_abort,std --target wasm32-unknown-unknown
-```
+These are set using [`rust-toolchain.toml`](./rust-toolchain.toml).
 
 ### Rust Analyzer
 
 To get proper diagnostics for Rust Atomics it can be helpful to configure Rust Analyzer to support
 that.
 
-Here is an example configuration for Visual Studio Code:
-
-```json
-"rust-analyzer.cargo.target": "wasm32-unknown-unknown",
-"rust-analyzer.cargo.extraArgs": [
-    "-Zbuild-std=panic_abort,std"
-],
-"rust-analyzer.cargo.extraEnv": {
-    "RUSTUP_TOOLCHAIN": "nightly",
-    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
-},
-```
+It takes the settings from `rust-toolchain.toml`, but we also need to specify a target, as seen for vscode in [.vscode/settings.json](./.vscode/settings.json).
 
 ## Testing
 
-Tests are run as usual, but tests that require Wasm Atomics can be run like this:
+Tests are run as usual, but also rewuire an explicit target:
 
 ```sh
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly test -Zbuild-std=panic_abort,std --target wasm32-unknown-unknown
+cargo test --target wasm32-unknown-unknown
 ```
 
 Additionally, keep in mind that usage of [`#[should_panic]`](`should_panic`) is known to cause
