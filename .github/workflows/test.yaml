@@ -150,6 +150,5 @@ jobs:
         run: rustup toolchain install nightly --profile minimal
       - name: Build
         run: |
-          cargo generate-lockfile
           cargo +nightly update -Z minimal-versions
           cargo build ${{ matrix.features.features }} --target ${{ matrix.target }}
