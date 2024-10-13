@@ -1,3 +1,5 @@
+//! Test for traits on all exported types.
+
 use std::error::Error;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
@@ -12,7 +14,7 @@ wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 #[cfg_attr(not(target_family = "wasm"), test)]
 #[cfg_attr(target_family = "wasm", wasm_bindgen_test::wasm_bindgen_test)]
-const fn basic() {
+const fn test() {
 	assert_impl_all!(Instant: Clone, Copy, Debug, Hash, Eq, PartialEq, Ord, PartialOrd, Send, Sync, Unpin, RefUnwindSafe, UnwindSafe);
 	assert_impl_all!(Instant: Add<Duration>, AddAssign<Duration>, Sub<Duration>, SubAssign<Duration>);
 

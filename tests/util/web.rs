@@ -41,9 +41,6 @@ pub(crate) fn sleep(duration: Duration) -> Sleep {
 	#[cfg(target_feature = "atomics")]
 	thread_local! {
 		/// Cached [`Global`].
-		#[allow(clippy::empty_docs, non_local_definitions)]
-		// https://github.com/rust-lang/rust/issues/120363
-		// https://github.com/rust-lang/rust/issues/121621
 		static GLOBAL: Global = {
 			#[wasm_bindgen]
 			extern "C" {

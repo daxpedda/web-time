@@ -27,6 +27,7 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_test = "1"
 static_assertions = "1"
+wasm-bindgen-test = "0.3"
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
 pollster = { version = "0.3", features = ["macro"] }
@@ -35,7 +36,6 @@ pollster = { version = "0.3", features = ["macro"] }
 getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
 wasm-bindgen-futures = "0.4"
-wasm-bindgen-test = "0.3"
 web-sys = { version = "0.3", features = [
 	"CssStyleDeclaration",
 	"Document",
@@ -56,6 +56,8 @@ web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92
 
 [patch.crates-io]
 pollster = { git = "https://github.com/zesterer/pollster", rev = "58f420e1ac19def81183ca4140470e4bb956fd11" }
+wasm-bindgen-test = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
+wasm-bindgen-test-macro = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
 
 [profile.bench]
 codegen-units = 1

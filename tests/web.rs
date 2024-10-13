@@ -1,3 +1,5 @@
+//! Test Web-specific API exported in [`web_time::web`].
+
 #![cfg(test)]
 #![cfg(target_family = "wasm")]
 

@@ -1,3 +1,5 @@
+//! Run tests with the atomics target feature.
+
 #![cfg(test)]
 #![cfg(all(target_family = "wasm", target_feature = "atomics"))]
 
