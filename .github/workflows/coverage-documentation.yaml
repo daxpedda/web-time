@@ -17,7 +17,7 @@ jobs:
   coverage:
     name: Test Coverage ${{ matrix.mt.description }}
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     timeout-minutes: 10
 
@@ -41,14 +41,15 @@ jobs:
         uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli
-      - name: Install Clang v18
-        run: sudo apt-get install clang-18
+      - name: Install Clang v19
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main"  
+          sudo apt-get install clang-19
       - name: Install Rust nightly
         run: |
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown ${{ matrix.mt.component }}
           rustup default nightly
-      - name: Fix LLVM v18 dependency
-        run: cargo update -p minicov --precise 0.3.5
       - name: Test
         env:
           CHROMEDRIVER: chromedriver
@@ -84,16 +85,7 @@ jobs:
                 file=$(dirname $file)/$(basename $file .wasm).ll
             fi
 
-            input=coverage-input/$(basename $file)
-            cp $file $input
-
-            perl -i -p0e 's/(^define.*?$).*?^}/$1\nstart:\n  unreachable\n}/gms' $input
-            counter=1
-            while (( counter != 0 )); do
-                counter=$(perl -i -p0e '$c+= s/(^(define|declare)(,? [^\n ]+)*),? range\(.*?\)/$1/gm; END{print "$c"}' $input)
-            done
-
-            clang-18 $input -Wno-override-module -c -o coverage-output/$(basename $input .ll).o
+            clang-19 $file -Wno-override-module -c -o coverage-output/$(basename $file .ll).o
           done
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4
@@ -108,13 +100,16 @@ jobs:
 
     needs: coverage
 
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install LLVM v18
-        run: sudo apt-get install llvm-18
+      - name: Install LLVM v19
+        run: |
+          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
+          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main"  
+          sudo apt-get install llvm-19
       - name: Download Test Coverage
         uses: actions/download-artifact@v4
         with:
@@ -122,7 +117,7 @@ jobs:
           path: coverage-input
       - name: Merge Profile Data
         run:
-          llvm-profdata-18 merge -sparse coverage-input/*/*.profraw -o
+          llvm-profdata-19 merge -sparse coverage-input/*/*.profraw -o
           coverage-input/coverage.profdata
       - name: Export Code Coverage Report
         run: |
@@ -132,8 +127,8 @@ jobs:
           do
               objects+=(-object $file)
           done
-          llvm-cov-18 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
-          llvm-cov-18 export -format=text -summary-only -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src | \
+          llvm-cov-19 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
+          llvm-cov-19 export -format=text -summary-only -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src | \
           printf '{ "coverage": "%.2f%%" }' $(jq '.data[0].totals.functions.percent') > coverage-output/coverage.json
           sed 's/<!doctype html>//' coverage-output/index.html | perl -p0e 's/<a[^>]*>((?!here).*?)<\/a>/$1/g' >> $GITHUB_STEP_SUMMARY
       - name: Upload Test Coverage Artifact

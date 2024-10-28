@@ -127,20 +127,9 @@ test () {
             file=$(dirname $file)/$(basename $file .wasm).ll
         fi
 
-        # Copy LLVM IR files.
-        local input=coverage-input/$path/$(basename $file)
-        cp $file $input
-
-        # Adjust LLVM IR files.
-        perl -i -p0e 's/(^define.*?$).*?^}/$1\nstart:\n  unreachable\n}/gms' $input
-        local counter=1
-        while (( counter != 0 )); do
-            counter=$(perl -i -p0e '$c+= s/(^(define|declare)(,? [^\n ]+)*),? range\(.*?\)/$1/gm; END{print "$c"}' $input)
-        done
-
         # Compile LLVM IR files to object files.
         local output=coverage-input/$path/$(basename $file .ll).o
-        clang-18 $input -Wno-override-module -c -o $output
+        clang-19 $file -Wno-override-module -c -o $output
         objects+=(-object $output)
     done
 }
@@ -149,7 +138,7 @@ test st 'st'
 test mt 'mt'
 
 # Merge all generated `*.profraw` files.
-llvm-profdata-18 merge -sparse coverage-input/*/*.profraw -o coverage-input/coverage.profdata
+llvm-profdata-19 merge -sparse coverage-input/*/*.profraw -o coverage-input/coverage.profdata
 # Finally generate coverage information.
-llvm-cov-18 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
+llvm-cov-19 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
 ```
