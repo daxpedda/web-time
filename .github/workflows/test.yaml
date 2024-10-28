@@ -68,6 +68,7 @@ jobs:
         if: matrix.rust.msrv == true
         run: |
           cargo update -p bumpalo --precise 3.14.0
+          cargo update -p serde --precise 1.0.210
           cargo update -p syn --precise 2.0.67
       - name: Build
         env:
