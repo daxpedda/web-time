@@ -47,6 +47,8 @@ jobs:
         run: |
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown ${{ matrix.mt.component }}
           rustup default nightly
+      - name: Fix LLVM v18 dependency
+        run: cargo update -p minicov --precise 0.3.5
       - name: Test
         env:
           CHROMEDRIVER: chromedriver
