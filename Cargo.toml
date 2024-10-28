@@ -30,7 +30,7 @@ static_assertions = "1"
 wasm-bindgen-test = "0.3"
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
-pollster = { version = "0.3", features = ["macro"] }
+pollster = { version = "0.4", features = ["macro"] }
 
 [target.'cfg(target_family = "wasm")'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
@@ -55,7 +55,6 @@ web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92
 ] }
 
 [patch.crates-io]
-pollster = { git = "https://github.com/zesterer/pollster", rev = "58f420e1ac19def81183ca4140470e4bb956fd11" }
 wasm-bindgen-test = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
 wasm-bindgen-test-macro = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
 
