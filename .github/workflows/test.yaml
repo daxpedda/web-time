@@ -14,7 +14,9 @@ env:
 
 jobs:
   build-test:
-    name: Build & Test
+    name:
+      ${{ matrix.rust.pre_description }} ${{ matrix.driver.description }} ${{
+      matrix.rust.post_description }} ${{ matrix.features.description }}
 
     runs-on: ${{ matrix.driver.os }}
 
@@ -24,13 +26,21 @@ jobs:
       fail-fast: false
       matrix:
         driver:
-          - { os: ubuntu-latest, default: true, name: CHROMEDRIVER, value: chromedriver }
-          - { os: ubuntu-latest, name: GECKODRIVER, value: geckodriver }
-          - { os: macos-latest, name: SAFARIDRIVER, value: safaridriver }
+          - {
+              os: ubuntu-latest,
+              description: Chrome,
+              default: true,
+              name: CHROMEDRIVER,
+              value: chromedriver,
+            }
+          - { os: ubuntu-latest, description: Firefox, name: GECKODRIVER, value: geckodriver }
+          - { os: macos-latest, description: Safari, name: SAFARIDRIVER, value: safaridriver }
         rust:
-          - { version: stable, msrv: false }
+          - { version: stable, pre_description: Build & Test, msrv: false }
           - {
               version: nightly,
+              pre_description: Build & Test,
+              post_description: with Atomics,
               msrv: false,
               component: --component rust-src,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
@@ -40,18 +50,18 @@ jobs:
           - { target: wasm32-unknown-unknown, native: false, docargs: -Zdoctest-xcompile }
         features:
           - { features: "" }
-          - { features: --all-features }
+          - { features: --all-features, description: (all features) }
         include:
-          - driver: { os: ubuntu-latest, default: true }
-            rust: { version: "1.60", msrv: true }
+          - driver: { os: ubuntu-latest, description: Web, default: true }
+            rust: { version: "1.60", pre_description: Build, post_description: MSRV, msrv: true }
             target: { target: wasm32-unknown-unknown, native: false }
             features: { features: "" }
-          - driver: { os: ubuntu-latest }
-            rust: { version: "1.60", msrv: true }
+          - driver: { os: ubuntu-latest, description: Native }
+            rust: { version: "1.60", pre_description: Build, post_description: MSRV, msrv: true }
             target: { target: x86_64-unknown-linux-gnu, native: true }
             features: { features: "" }
-          - driver: { os: ubuntu-latest }
-            rust: { version: stable, msrv: false }
+          - driver: { os: ubuntu-latest, description: Native }
+            rust: { version: stable, pre_description: Build & Test, msrv: false }
             target: { target: x86_64-unknown-linux-gnu, native: true }
             features: { features: "" }
 
@@ -108,7 +118,9 @@ jobs:
           matrix.target.target }} ${{ matrix.rust.args }} ${{ matrix.target.docargs }}
 
   minimal-versions:
-    name: Minimal Versions
+    name:
+      Minimal Versions ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      matrix.features.description }}
 
     runs-on: ubuntu-latest
     defaults:
@@ -119,25 +131,25 @@ jobs:
       fail-fast: false
       matrix:
         rust:
-          - "1.60"
-          - stable
+          - { version: "1.60", description: MSRV }
+          - { version: stable }
         target:
-          - x86_64-unknown-linux-gnu
-          - wasm32-unknown-unknown
+          - { target: x86_64-unknown-linux-gnu, description: Native }
+          - { target: wasm32-unknown-unknown, description: Web }
         features:
           - { features: "" }
-          - { features: --all-features }
+          - { features: --all-features, description: (all features) }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Rust
         run: |
-          rustup toolchain install ${{ matrix.rust }} --profile minimal --target ${{ matrix.target }}
-          rustup default ${{ matrix.rust }}
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --target ${{ matrix.target.target }}
+          rustup default ${{ matrix.rust.version }}
       - name: Install Rust nightly
         run: rustup toolchain install nightly --profile minimal
       - name: Build
         run: |
           cargo +nightly update -Z minimal-versions
-          cargo build ${{ matrix.features.features }} --target ${{ matrix.target }}
+          cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }}
