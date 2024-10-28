@@ -16,19 +16,19 @@ jobs:
   build-test:
     name: Build & Test
 
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.driver.os }}
 
     timeout-minutes: 10
 
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
+        driver:
+          - { os: ubuntu-latest, default: true, name: CHROMEDRIVER, value: chromedriver }
+          - { os: ubuntu-latest, name: GECKODRIVER, value: geckodriver }
+          - { os: macos-latest, name: SAFARIDRIVER, value: safaridriver }
         rust:
-          - { version: "1.60", msrv: true, component: "", flags: "", args: "" }
-          - { version: stable, msrv: false, component: "", flags: "", args: "" }
+          - { version: stable, msrv: false }
           - {
               version: nightly,
               msrv: false,
@@ -37,22 +37,23 @@ jobs:
               args: "-Zbuild-std=panic_abort,std",
             }
         target:
-          - { target: wasm32-unknown-unknown, native: false }
+          - { target: wasm32-unknown-unknown, native: false, docargs: -Zdoctest-xcompile }
         features:
           - { features: "" }
           - { features: --all-features }
         include:
-          - os: ubuntu-latest
-            rust: { version: "1.60", msrv: true, component: "", flags: "", args: "" }
+          - driver: { os: ubuntu-latest, default: true }
+            rust: { version: "1.60", msrv: true }
+            target: { target: wasm32-unknown-unknown, native: false }
+            features: { features: "" }
+          - driver: { os: ubuntu-latest }
+            rust: { version: "1.60", msrv: true }
             target: { target: x86_64-unknown-linux-gnu, native: true }
             features: { features: "" }
-          - os: ubuntu-latest
-            rust: { version: stable, msrv: false, component: "", flags: "", args: "" }
+          - driver: { os: ubuntu-latest }
+            rust: { version: stable, msrv: false }
             target: { target: x86_64-unknown-linux-gnu, native: true }
             features: { features: "" }
-        exclude:
-          - os: macos-latest
-            rust: { version: "1.60", msrv: true, component: "", flags: "", args: "" }
 
     steps:
       - name: Checkout
@@ -71,53 +72,40 @@ jobs:
           cargo update -p serde --precise 1.0.210
           cargo update -p syn --precise 2.0.67
       - name: Build
+        if: matrix.driver.default == true || matrix.target.native == true
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
         run:
           cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }} ${{
           matrix.rust.args }}
       - name: Documentation
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.driver.default == true || matrix.target.native == true
         env:
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
           RUSTFLAGS: ${{ matrix.rust.flags }}
         run:
           cargo doc --no-deps ${{ matrix.features.features }} --target ${{ matrix.target.target }}
           ${{ matrix.rust.args }}
+      - name: Set Driver
+        if: matrix.rust.msrv == false && matrix.target.native == false
+        run: echo "${{ matrix.driver.name }}=${{ matrix.driver.value }}" >> $GITHUB_ENV
       - name: Test
-        if:
-          matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == true
-        run: cargo test --all-targets --no-fail-fast
-      - name: Test on Chrome
-        if:
-          matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == false
-        env:
-          CHROMEDRIVER: chromedriver
-          RUSTFLAGS: ${{ matrix.rust.flags }}
+        if: matrix.rust.msrv == false
         run:
           cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{
           matrix.target.target }} ${{ matrix.rust.args }}
-      - name: Test on Firefox
+      - name: Switch to nightly Rust for Wasm documentation tests
         if:
-          matrix.rust.msrv == false && matrix.os == 'ubuntu-latest' && matrix.target.native == false
-        env:
-          GECKODRIVER: geckodriver
-          RUSTFLAGS: ${{ matrix.rust.flags }}
-        run:
-          cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{
-          matrix.target.target }} ${{ matrix.rust.args }}
-      - name: Test on Safari
-        if: matrix.rust.msrv == false && matrix.os == 'macos-latest'
-        env:
-          SAFARIDRIVER: safaridriver
-          RUSTFLAGS: ${{ matrix.rust.flags }}
-        run:
-          cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{
-          matrix.target.target }} ${{ matrix.rust.args }}
+          matrix.rust.msrv == false && matrix.target.native == false && matrix.rust.version !=
+          'nightly'
+        run: |
+          rustup toolchain install nightly --profile minimal --target ${{ matrix.target.target }}
+          rustup default nightly
       - name: Documentation Test
-        if:
-          matrix.rust.msrv == false && matrix.target.native == true && matrix.os == 'ubuntu-latest'
-        run: cargo test --doc --no-fail-fast
+        if: matrix.rust.msrv == false
+        run:
+          cargo test ${{ matrix.features.features }} --doc --no-fail-fast --target ${{
+          matrix.target.target }} ${{ matrix.rust.args }} ${{ matrix.target.docargs }}
 
   minimal-versions:
     name: Minimal Versions

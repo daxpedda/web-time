@@ -51,11 +51,16 @@
 //! # Usage
 //!
 //! You can simply import the types you need:
-//! ```rust
+//! ```
 //! use web_time::{Instant, SystemTime};
 //!
+//! # wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+//! #
+//! # #[wasm_bindgen_test::wasm_bindgen_test]
+//! # fn main() {
 //! let now = Instant::now();
 //! let time = SystemTime::now();
+//! # }
 //! ```
 //!
 //! # Features
