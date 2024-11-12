@@ -82,10 +82,6 @@
 //! As this library heavily relies on [`wasm-bindgen`] the MSRV depends on it.
 //! At the point of time this was written the MSRV is 1.60.
 //!
-//! # Alternatives
-//!
-//! [instant](https://crates.io/crates/instant) [![Crates.io](https://img.shields.io/crates/v/instant.svg)](https://crates.io/crates/instant) is a popular alternative! However the API it implements doesn't match [`std::time`] exactly.
-//!
 //! # Contributing
 //!
 //! See the [CONTRIBUTING] file for details.
