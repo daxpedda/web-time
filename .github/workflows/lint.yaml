@@ -15,7 +15,7 @@ env:
 jobs:
   clippy-rustdoc:
     name:
-      Clippy & Rustdoc ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      Clippy ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
       matrix.features.description }}
 
     runs-on: ubuntu-latest
@@ -55,6 +55,51 @@ jobs:
         run:
           cargo clippy --all-targets ${{ matrix.features.features }} --target ${{
           matrix.target.target }} ${{ matrix.rust.args }} -- -D warnings
+
+  rustdoc:
+    name:
+      Rustdoc ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      matrix.features.description }}
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { target: wasm32-unknown-unknown, description: Web }
+        rust:
+          - { version: stable }
+          - {
+              version: nightly,
+              description: with Atomics,
+              component: ",rust-src",
+              flags: "-Ctarget-feature=+atomics,+bulk-memory",
+              args: "-Zbuild-std=panic_abort,std",
+            }
+          - { version: nightly, description: with docs.rs, flags: "--cfg=docsrs" }
+          - {
+              version: nightly,
+              description: with Atomics & docs.rs,
+              component: ",rust-src",
+              flags: "-Ctarget-feature=+atomics,+bulk-memory --cfg=docsrs",
+              args: "-Zbuild-std=panic_abort,std",
+            }
+        features:
+          - { features: "" }
+          - { features: --all-features, description: (all features) }
+        include:
+          - target: { target: x86_64-unknown-linux-gnu, description: Native }
+            rust: { version: stable }
+            features: { features: "" }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --component clippy${{ matrix.rust.component }} --allow-downgrade --target ${{ matrix.target.target }}
+          rustup default ${{ matrix.rust.version }}
       - name: Run Rustdoc
         env:
           RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }}
