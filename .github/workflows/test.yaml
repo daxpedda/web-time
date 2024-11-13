@@ -68,9 +68,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - uses: taiki-e/install-action@v2
+      - name: Install `wasm-bindgen-cli`
+        uses: taiki-e/cache-cargo-install-action@v2
         with:
           tool: wasm-bindgen-cli
+          git: https://github.com/daxpedda/wasm-bindgen
+          rev: 6a5e62b1d89c9e927747700b5908b257761c9280
       - name: Install Rust
         run: |
           rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
