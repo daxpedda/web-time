@@ -1,16 +1,23 @@
 //! Re-implementation of [`std::time::Instant`].
+#![cfg_attr(
+	not(feature = "std"),
+	doc = "",
+	doc = "[`std::time::Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html"
+)]
 
-use std::ops::{Add, AddAssign, Sub, SubAssign};
-use std::time::Duration;
-
-use super::js::PERFORMANCE;
+use core::ops::{Add, AddAssign, Sub, SubAssign};
+use core::time::Duration;
 
 #[cfg(target_feature = "atomics")]
-thread_local! {
-	static ORIGIN: f64 = PERFORMANCE.with(super::js::Performance::time_origin);
-}
+use super::js::Origin;
+use super::js::Performance;
 
 /// See [`std::time::Instant`].
+#[cfg_attr(
+	not(feature = "std"),
+	doc = "",
+	doc = "[`std::time::Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html"
+)]
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct Instant(Duration);
 
@@ -24,26 +31,37 @@ impl Instant {
 	///
 	/// [`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property
 	/// [worklet]: https://developer.mozilla.org/en-US/docs/Web/API/Worklet
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "[`std::time::Instant::now()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.now"
+	)]
 	#[must_use]
 	pub fn now() -> Self {
-		let now = PERFORMANCE.with(|performance| {
-			#[cfg(target_feature = "atomics")]
-			return ORIGIN.with(|origin| performance.now() + origin);
-
-			#[cfg(not(target_feature = "atomics"))]
-			performance.now()
-		});
+		#[cfg(not(target_feature = "atomics"))]
+		let now = Performance::now();
+		#[cfg(target_feature = "atomics")]
+		let now = Performance::now() + Origin::get();
 
 		Self(time_stamp_to_duration(now))
 	}
 
 	/// See [`std::time::Instant::duration_since()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::Instant::duration_since()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.duration_since"
+	)]
 	#[must_use]
 	pub fn duration_since(&self, earlier: Self) -> Duration {
 		self.checked_duration_since(earlier).unwrap_or_default()
 	}
 
 	/// See [`std::time::Instant::checked_duration_since()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::Instant::checked_duration_since()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.checked_duration_since"
+	)]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub fn checked_duration_since(&self, earlier: Self) -> Option<Duration> {
@@ -51,23 +69,43 @@ impl Instant {
 	}
 
 	/// See [`std::time::Instant::saturating_duration_since()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::Instant::saturating_duration_since()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.saturating_duration_since"
+	)]
 	#[must_use]
 	pub fn saturating_duration_since(&self, earlier: Self) -> Duration {
 		self.checked_duration_since(earlier).unwrap_or_default()
 	}
 
 	/// See [`std::time::Instant::elapsed()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::Instant::elapsed()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.elapsed"
+	)]
 	#[must_use]
 	pub fn elapsed(&self) -> Duration {
 		Self::now() - *self
 	}
 
 	/// See [`std::time::Instant::checked_add()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::Instant::checked_add()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.checked_add"
+	)]
 	pub fn checked_add(&self, duration: Duration) -> Option<Self> {
 		self.0.checked_add(duration).map(Instant)
 	}
 
 	/// See [`std::time::Instant::checked_sub()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::Instant::checked_sub()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.checked_sub"
+	)]
 	pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
 		self.0.checked_sub(duration).map(Instant)
 	}
@@ -130,30 +168,116 @@ impl SubAssign<Duration> for Instant {
 	clippy::cast_sign_loss
 )]
 fn time_stamp_to_duration(time_stamp: f64) -> Duration {
+	let time_stamp = F64(time_stamp);
+
 	Duration::from_millis(time_stamp.trunc() as u64)
-		+ Duration::from_nanos((time_stamp.fract() * 1.0e6).round() as u64)
+		+ Duration::from_nanos(F64(time_stamp.fract() * 1.0e6).round() as u64)
+}
+
+/// [`f64`] `no_std` compatibility wrapper.
+#[derive(Clone, Copy)]
+struct F64(f64);
+
+impl F64 {
+	/// See [`f64::trunc()`].
+	#[cfg(feature = "std")]
+	#[allow(clippy::disallowed_methods)]
+	fn trunc(self) -> f64 {
+		self.0.trunc()
+	}
+
+	#[cfg(not(feature = "std"))]
+	#[allow(warnings)]
+	fn trunc(self) -> f64 {
+		// See <https://github.com/rust-lang/libm/blob/libm-v0.2.11/src/math/trunc.rs>.
+
+		let x1p120 = f64::from_bits(0x4770000000000000); // `0x1p120f === 2 ^ 120`
+
+		let mut i: u64 = self.0.to_bits();
+		let mut e: i64 = (i >> 52 & 0x7ff) as i64 - 0x3ff + 12;
+		let m: u64;
+
+		if e >= 52 + 12 {
+			return self.0;
+		}
+		if e < 12 {
+			e = 1;
+		}
+		m = -1i64 as u64 >> e;
+		if (i & m) == 0 {
+			return self.0;
+		}
+		#[allow(unsafe_code)]
+		unsafe {
+			::core::ptr::read_volatile(&(self.0 + x1p120))
+		};
+		i &= !m;
+		f64::from_bits(i)
+	}
+
+	/// See [`f64::fract()`].
+	#[cfg(feature = "std")]
+	#[allow(clippy::disallowed_methods)]
+	fn fract(self) -> f64 {
+		self.0.fract()
+	}
+
+	#[cfg(not(feature = "std"))]
+	fn fract(self) -> f64 {
+		self.0 - self.trunc()
+	}
+
+	/// See [`f64::copysign()`].
+	///
+	/// [`f64::copysign()`]: https://doc.rust-lang.org/std/primitive.f64.html#method.copysign
+	#[cfg(not(feature = "std"))]
+	fn copysign(self, sign: f64) -> f64 {
+		// See <https://github.com/rust-lang/libm/blob/libm-v0.2.11/src/math/copysign.rs>.
+
+		let mut ux = self.0.to_bits();
+		let uy = sign.to_bits();
+		ux &= (!0) >> 1;
+		ux |= uy & (1 << 63);
+		f64::from_bits(ux)
+	}
+
+	/// See [`f64::round()`].
+	#[cfg(feature = "std")]
+	#[allow(clippy::disallowed_methods)]
+	fn round(self) -> f64 {
+		self.0.round()
+	}
+
+	#[cfg(not(feature = "std"))]
+	fn round(self) -> f64 {
+		// See <https://github.com/rust-lang/libm/blob/libm-v0.2.11/src/math/round.rs>.
+
+		Self(self.0 + Self(0.5 - 0.25 * f64::EPSILON).copysign(self.0)).trunc()
+	}
 }
 
 #[cfg(test)]
 #[cfg_attr(wasm_bindgen_unstable_test_coverage, coverage(off))]
 mod test {
-	use std::time::Duration;
+	//! Testing internal code.
+
+	use core::time::Duration;
 
 	use rand::distributions::Uniform;
-	use rand::Rng;
+	use rand::rngs::{OsRng, StdRng};
+	use rand::{Rng, SeedableRng};
 	use wasm_bindgen_test::wasm_bindgen_test;
 
-	wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+	/// Range to maximum accurately representable integer.
+	const MAXIMUM_ACCURATE_F64: u64 = u64::pow(2, f64::MANTISSA_DIGITS);
 
-	// According to <https://www.w3.org/TR/2023/WD-hr-time-3-20230719/#introduction>.
-	const MAXIMUM_ACCURATE_SECS: u64 = 285_616 * 365 * 24 * 60 * 60;
-	#[allow(clippy::as_conversions, clippy::cast_precision_loss)]
-	const MAXIMUM_ACCURATE_MILLIS: f64 = MAXIMUM_ACCURATE_SECS as f64 * 1_000.;
-
+	/// [`Duration`] wrapper to simulate [`std`] behavior.
 	#[derive(Debug)]
 	struct ControlDuration(Duration);
 
 	impl ControlDuration {
+		/// Implements conversion from `DOMHighResTimeStamp` to [`Duration`] by
+		/// using [`Duration::checked_div()`].
 		fn new(time_stamp: f64) -> Self {
 			// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#657-668>.
 			let time_stamp = Duration::from_secs_f64(time_stamp);
@@ -185,8 +309,11 @@ mod test {
 		}
 	}
 
+	/// Compare [`super::time_stamp_to_duration()`] against a pre-determined set
+	/// of [`Durations`]s.
 	#[wasm_bindgen_test]
 	fn sanity() {
+		/// Do the comparison for this test.
 		#[track_caller]
 		fn assert(time_stamp: f64, result: Duration) {
 			let control = ControlDuration::new(time_stamp);
@@ -220,16 +347,32 @@ mod test {
 		assert(1_000.000_001, Duration::from_nanos(1_000_000_001));
 		assert(1_000.000_001_4, Duration::from_nanos(1_000_000_001));
 		assert(1_000.000_001_5, Duration::from_nanos(1_000_000_002));
+		#[expect(
+			clippy::as_conversions,
+			clippy::cast_precision_loss,
+			reason = "no conversion available"
+		)]
 		assert(
-			MAXIMUM_ACCURATE_MILLIS,
-			Duration::from_secs(MAXIMUM_ACCURATE_SECS),
+			MAXIMUM_ACCURATE_F64 as f64,
+			Duration::from_secs(MAXIMUM_ACCURATE_F64) / 1000,
 		);
 	}
 
+	/// Compare [`super::time_stamp_to_duration()`] against random
+	/// [`Duration`]s.
 	#[wasm_bindgen_test]
 	fn fuzzing() {
-		let mut random =
-			rand::thread_rng().sample_iter(Uniform::new_inclusive(0., MAXIMUM_ACCURATE_MILLIS));
+		#[expect(
+			clippy::as_conversions,
+			clippy::cast_precision_loss,
+			reason = "no conversion available"
+		)]
+		let mut random = StdRng::from_rng(OsRng)
+			.unwrap()
+			.sample_iter(Uniform::new_inclusive(
+				0.,
+				(MAXIMUM_ACCURATE_F64 / 1000) as f64,
+			));
 
 		for _ in 0..10_000_000 {
 			let time_stamp = random.next().unwrap();

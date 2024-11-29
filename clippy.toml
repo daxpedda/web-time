@@ -1,4 +1,11 @@
 allow-renamed-params-for = ["..", "core::fmt::Debug", "core::fmt::Display"]
 allow-unwrap-in-tests = true
 avoid-breaking-exported-api = false
+disallowed-methods = [
+	{ path = "f64::trunc", reason = "not available on `no_std`" },
+	{ path = "f64::fract", reason = "not available on `no_std`" },
+	{ path = "f64::copysign", reason = "not available on `no_std`" },
+	{ path = "f64::round", reason = "not available on `no_std`" },
+	{ path = "f64::powi", reason = "not available on `no_std`" },
+]
 semicolon-outside-block-ignore-multiline = true

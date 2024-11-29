@@ -2,6 +2,8 @@
 //! problems with `panic = "abort"`.
 
 #![cfg(test)]
+#![cfg_attr(target_family = "wasm", no_main)]
+#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
 
 mod util;
 
@@ -9,8 +11,6 @@ use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::{Duration, SystemTime};
 
 use self::util::{sleep, DIFF};
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 /// [`SystemTime::add()`] failure.
 #[wasm_bindgen_test(unsupported = pollster::test)]

@@ -1,5 +1,10 @@
+[workspace]
+members = ["tests-native", "tests-web"]
+resolver = "2"
+
 [package]
 autobenches = false
+autotests = false
 categories = ["api-bindings", "date-and-time", "wasm"]
 description = "Drop-in replacement for std::time for Wasm in browsers"
 edition = "2021"
@@ -12,71 +17,60 @@ rust-version = "1.60"
 version = "1.1.0"
 
 [features]
+default = ["std"]
 serde = ["dep:serde"]
+std = [
+	"wasm-bindgen/std",
+	"js-sys/std",
+	"once_cell/std",
+	"serde?/std",
+	"wasm-bindgen-test/std",
+	"getrandom/std",
+	"rand/std",
+	"tests-native/std",
+	"tests-web/std",
+]
 
-[target.'cfg(all(target_family = "wasm", target_os = "unknown"))'.dependencies]
-js-sys = "0.3.20"
-serde = { version = "1", optional = true }
-wasm-bindgen = { version = "0.2.70", default-features = false }
-
-[profile.test]
-opt-level = 1
+[target.'cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))'.dependencies]
+js-sys = { version = "0.3.73", default-features = false }
+once_cell = { version = "1.12.0", default-features = false }
+serde = { version = "1.0.0", optional = true, default-features = false }
+wasm-bindgen = { version = "0.2.96", default-features = false }
 
 [dev-dependencies]
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
-serde_test = "1"
-static_assertions = "1"
-wasm-bindgen-test = "0.3"
+wasm-bindgen-test = { version = "0.3", default-features = false }
 
 [target.'cfg(not(target_family = "wasm"))'.dev-dependencies]
-pollster = { version = "0.4", features = ["macro"] }
+tests-native = { path = "tests-native", default-features = false, features = ["run"] }
 
 [target.'cfg(target_family = "wasm")'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
-rand = "0.8"
-wasm-bindgen-futures = "0.4"
-web-sys = { version = "0.3", features = [
-	"CssStyleDeclaration",
-	"Document",
-	"Element",
-	"HtmlTableElement",
-	"HtmlTableRowElement",
-	"Performance",
-	"Window",
-] }
-
-[target.'cfg(all(target_family = "wasm", target_feature = "atomics"))'.dev-dependencies]
-futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
-futures-util = { version = "0.3", default-features = false }
-web-sys = { version = "0.3", features = ["OfflineAudioContext", "WorkerGlobalScope"] }
-web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92354cbe0a0c07e71b9888be8b3e45999", features = [
-	"audio-worklet",
-] }
+rand = { version = "0.8", default-features = false, features = ["getrandom", "std_rng"] }
+tests-web = { path = "tests-web", default-features = false, features = ["run"] }
 
 [patch.crates-io]
-wasm-bindgen-test = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
-wasm-bindgen-test-macro = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
+getrandom = { git = "https://github.com/daxpedda/getrandom", branch = "web-time" }
+serde_test = { git = "https://github.com/daxpedda/test", branch = "no_std" }
+
+[profile.test]
+opt-level = 1
 
 [profile.bench]
 codegen-units = 1
 lto = true
 
-[[example]]
-name = "benchmark"
-path = "benches/benchmark.rs"
-
-[[test]]
-name = "serde"
-path = "tests/serde.rs"
-required-features = ["serde"]
+[lib]
+harness = false
 
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg=docsrs"]
-targets = ["wasm32-unknown-unknown"]
+targets = ["wasm32-unknown-unknown", "wasm32v1-none"]
 
-[lints.rust]
+[lints]
+workspace = true
+
+[workspace.lints.rust]
 # Rust groups.
 future_incompatible = { level = "warn", priority = -1 }
 rust_2018_compatibility = { level = "warn", priority = -1 }
@@ -106,7 +100,7 @@ unused_import_braces = "warn"
 unused_lifetimes = "warn"
 unused_qualifications = "warn"
 
-[lints.clippy]
+[workspace.lints.clippy]
 # Clippy groups.
 cargo = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
@@ -188,5 +182,5 @@ option_if_let_else = "allow"
 redundant_pub_crate = "allow"
 tabs_in_doc_comments = "allow"
 
-[lints.rustdoc]
+[workspace.lints.rustdoc]
 all = { level = "warn", priority = -1 }

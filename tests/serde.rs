@@ -1,16 +1,20 @@
 //! [`serde`] tests for [`SystemTime`].
 
 #![cfg(test)]
+#![cfg_attr(target_family = "wasm", no_main)]
+#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
+
+extern crate alloc;
 
 mod util;
 
+use alloc::string::ToString;
+#[cfg(feature = "std")]
 use std::time::{Duration, SystemTime as StdSystemTime};
 
 use serde_test::Token;
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::SystemTime;
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 /// De/Serialization of [`SystemTime`].
 #[wasm_bindgen_test(unsupported = test)]
@@ -32,6 +36,7 @@ fn unix_epoch_json() {
 }
 
 /// De/Serialization compatibility with [`std::time::SystemTime`].
+#[cfg(feature = "std")]
 #[wasm_bindgen_test(unsupported = test)]
 fn std_compatibility_json() {
 	let time = SystemTime::now();
@@ -224,17 +229,20 @@ fn failure_map() {
 #[wasm_bindgen_test(unsupported = test)]
 fn failure_serialize() {
 	let mut serialized = [0; 0];
-	let error = serde_json::to_writer(serialized.as_mut(), &SystemTime::UNIX_EPOCH).unwrap_err();
+	let error =
+		serde_json_core::to_slice(&SystemTime::UNIX_EPOCH, serialized.as_mut()).unwrap_err();
 
-	assert_eq!(error.to_string(), "failed to write whole buffer");
+	assert_eq!(error.to_string(), "Buffer is full");
 
 	let mut serialized = [0; 1];
-	let error = serde_json::to_writer(serialized.as_mut(), &SystemTime::UNIX_EPOCH).unwrap_err();
+	let error =
+		serde_json_core::to_slice(&SystemTime::UNIX_EPOCH, serialized.as_mut()).unwrap_err();
 
-	assert_eq!(error.to_string(), "failed to write whole buffer");
+	assert_eq!(error.to_string(), "Buffer is full");
 
 	let mut serialized = [0; 21];
-	let error = serde_json::to_writer(serialized.as_mut(), &SystemTime::UNIX_EPOCH).unwrap_err();
+	let error =
+		serde_json_core::to_slice(&SystemTime::UNIX_EPOCH, serialized.as_mut()).unwrap_err();
 
-	assert_eq!(error.to_string(), "failed to write whole buffer");
+	assert_eq!(error.to_string(), "Buffer is full");
 }

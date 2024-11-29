@@ -1,17 +1,15 @@
 //! [`Instant`] tests.
 
 #![cfg(test)]
-#![allow(clippy::missing_assert_message)]
+#![cfg_attr(target_family = "wasm", no_main)]
+#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
 
 mod util;
 
-use util::MAX_DIFF;
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::{Duration, Instant};
 
-use self::util::{sleep, DIFF};
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+use self::util::{sleep, DIFF, MAX_DIFF};
 
 /// [`Instant::duration_since()`] success.
 #[wasm_bindgen_test(unsupported = pollster::test)]
@@ -136,8 +134,12 @@ async fn add_assign_success() {
 }
 
 /// [`Instant::sub()`] success.
-#[allow(clippy::unchecked_duration_subtraction)]
 #[wasm_bindgen_test(unsupported = pollster::test)]
+#[allow(
+	clippy::allow_attributes,
+	clippy::unchecked_duration_subtraction,
+	reason = "this is what we are testing"
+)]
 async fn sub_success() {
 	let instant = Instant::now();
 	sleep(DIFF).await;

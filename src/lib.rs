@@ -8,23 +8,19 @@
 //! to offer a drop-in replacement that works in browsers.
 //!
 //! At the same time the library will simply re-export [`std::time`] when not
-//! using the `wasm32-unknown-unknown` target and will not pull in any
-//! dependencies.
+//! using the `wasm32-unknown-unknown` or `wasm32v1-none` target and will not
+//! pull in any dependencies.
 //!
 //! Additionally, if compiled with `target-feature = "atomics"` it will
 //! synchronize the timestamps to account for different context's, like web
 //! workers. See [`Performance.timeOrigin`] for more information.
 //!
-//! Using `-Ctarget-feature=+nontrapping-fptoint` will improve the performance
-//! of [`Instant::now()`] and [`SystemTime::now()`], but the vast majority of
-//! the time is still spent going through JS.
-//!
 //! # Target
 //!
 //! This library specifically targets browsers, that support
-//! [`Performance.now()`], with the `wasm32-unknown-unknown` target. Emscripten
-//! is not supported. WASI doesn't require support as it has it's own native API
-//! to deal with [`std::time`].
+//! [`Performance.now()`], with the `wasm32-unknown-unknown` or `wasm32v1-none`
+//! target. Emscripten is not supported. WASI doesn't require support as it has
+//! it's own native API to deal with [`std::time`].
 //!
 //! Furthermore it depends on [`wasm-bindgen`], which is required. This library
 //! will continue to depend on it until a viable alternative presents itself, in
@@ -52,8 +48,12 @@
 //!
 //! You can simply import the types you need:
 //! ```
+//! # #![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std, no_main)]
+//! #
 //! use web_time::{Instant, SystemTime};
-//!
+//! # #[cfg(target_family = "wasm")]
+//! # use tests_web as _;
+//! #
 //! # wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 //! #
 //! # #[wasm_bindgen_test::wasm_bindgen_test]
@@ -63,7 +63,20 @@
 //! # }
 //! ```
 //!
+//! Using `-Ctarget-feature=+nontrapping-fptoint` will improve the performance
+//! of [`Instant::now()`] and [`SystemTime::now()`], but the vast majority of
+//! the time is still spent going through JS.
+//!
 //! # Features
+//!
+//! ## `std` (enabled by default)
+//!
+//! Enables the corresponding crate feature in all dependencies and allows for
+//! some optimized instruction output.
+//!
+//! Without this crate feature compilation the standard library is not included.
+//! Has no effect on targets other then `wasm32-unknown-unknown` or
+//! `wasm32v1-none`.
 //!
 //! ## `serde`
 //!
@@ -127,7 +140,7 @@
 //! [`Instant::now()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.now
 //! [`SystemTime`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html
 //! [`SystemTime::now()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.now
-//! [`std::time`]: https://doc.rust-lang.org/stable/std/time/
+//! [`std::time`]: https://doc.rust-lang.org/std/time/
 //! [`performance.now()`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
 //! [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
 //! [`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property
@@ -138,17 +151,44 @@
 )]
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 
+#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
+#![cfg_attr(all(test, target_family = "wasm"), no_main)]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(wasm_bindgen_unstable_test_coverage, feature(coverage_attribute))]
+#![cfg_attr(
+	all(
+		target_family = "wasm",
+		any(target_os = "unknown", target_os = "none"),
+		target_feature = "atomics",
+		not(feature = "std"),
+	),
+	feature(thread_local)
+)]
 
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+#[cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))]
 mod time;
-#[cfg(any(all(target_family = "wasm", target_os = "unknown"), docsrs))]
-#[cfg_attr(docsrs, doc(cfg(Web)))]
+#[cfg(any(
+	all(
+		target_family = "wasm",
+		any(target_os = "unknown", target_os = "none"),
+		feature = "std"
+	),
+	docsrs
+))]
+#[cfg_attr(docsrs, doc(cfg(all(Web, feature = "std"))))]
 pub mod web;
 
-#[cfg(not(all(target_family = "wasm", target_os = "unknown")))]
+#[cfg(not(all(target_family = "wasm", any(target_os = "unknown", target_os = "none"))))]
 pub use std::time::*;
 
-#[cfg(all(target_family = "wasm", target_os = "unknown"))]
+#[cfg(all(test, target_family = "wasm"))]
+use tests_web as _;
+
+#[cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))]
 pub use self::time::*;
+
+#[cfg(all(test, target_family = "wasm"))]
+wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+
+#[cfg(all(test, not(target_family = "wasm")))]
+fn main() {}

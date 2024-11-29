@@ -2,6 +2,33 @@
 
 Thank you for contributing!
 
+## [`no_std`]
+
+This crate has some code paths that depend on [`no_std`], which can be compiled with Cargo by using
+`--no-default-features`. Additionally, its best to use the `wasm32v1-none` target to ensure the
+standard library isn't included in any dependency.
+
+Example usage:
+
+```sh
+cargo +nightly build --target wasm32v1-none --no-default-features
+```
+
+### Rust Analyzer
+
+To get proper diagnostics for [`no_std`] it can be helpful to configure Rust Analyzer to support
+that.
+
+Here is an example configuration for Visual Studio Code:
+
+```json
+"rust-analyzer.cargo.target": "wasm32v1-none",
+"rust-analyzer.cargo.noDefaultFeatures": true,
+"rust-analyzer.cargo.extraEnv": {
+    "RUSTUP_TOOLCHAIN": "nightly",
+},
+```
+
 ## Wasm Atomics
 
 This crate has some code paths that depend on Wasm Atomics, which has some prerequisites to compile:
@@ -17,8 +44,12 @@ Example usage:
 # Installing Rust nightly and necessary components:
 rustup toolchain install nightly --target wasm32-unknown-unknown --component rust-src
 # Example `cargo build` usage:
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build -Zbuild-std=panic_abort,std --target wasm32-unknown-unknown
+RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
+# Example `no_std` `cargo build` usage:
+RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build --target wasm32v1-none -Zbuild-std=core,alloc --no-default-features
 ```
+
+[`build-std`]: https://doc.rust-lang.org/1.73.0/cargo/reference/unstable.html#build-std
 
 ### Rust Analyzer
 
@@ -38,22 +69,79 @@ Here is an example configuration for Visual Studio Code:
 },
 ```
 
+Or with [`no_std`]:
+
+```json
+"rust-analyzer.cargo.target": "wasm32v1-none",
+"rust-analyzer.cargo.noDefaultFeatures": true,
+"rust-analyzer.cargo.extraArgs": [
+    "-Zbuild-std=core,alloc"
+],
+"rust-analyzer.cargo.extraEnv": {
+    "RUSTUP_TOOLCHAIN": "nightly",
+    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
+},
+```
+
 ## Testing
 
-Tests are run as usual, but tests that require Wasm Atomics can be run like this:
+Tests are run as usual. But integration tests have a special setup to support [`no_std`].
+
+### Run
+
+To run integration tests just use `--workspace`:
 
 ```sh
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly test -Zbuild-std=panic_abort,std --target wasm32-unknown-unknown
+# Run tests for native.
+cargo test --workspace
+# Run tests for Wasm.
+cargo test --workspace --target wasm32-unknown-unknown
+# Run tests for `no_std`.
+cargo +nightly test --workspace --target wasm32v1-none --no-default-features
+# Run tests for Wasm atomics.
+RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly test --workspace --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
+```
+
+Make sure not to use `--all-features`.
+
+### Implement
+
+To implement integration tests, you have to understand the setup. [`no_std`] support requires the
+[test harness] has to be disabled. However, to keep the [test harness] enabled for native tests, the
+same tests are split into two [test targets]. These are defined in the `tests-native` and
+`tests-web` crate for each target respectively. The [test targets] are then enabled, depending on
+the target, via the `run` crate feature.
+
+So to add a new integration test the following [test targets] have to be added:
+
+`tests-web/Cargo.toml`:
+
+```toml
+[[test]]
+harness = false
+name = "web_new_test"
+path = "../tests/new_test.rs"
+required-features = ["run"]
+```
+
+`tests-native/Cargo.toml`:
+
+```toml
+[[test]]
+name = "native_new_test"
+path = "../tests/new_test.rs"
+required-features = ["run"]
 ```
 
 Additionally, keep in mind that usage of [`#[should_panic]`](`should_panic`) is known to cause
 browsers to get stuck because of the lack of unwinding support.
 
-The current workaround is to split tests using `await` into separate test targets.
+The current workaround is to split tests using `await` into separate [test targets].
 
-[`build-std`]: https://doc.rust-lang.org/1.73.0/cargo/reference/unstable.html#build-std
 [`should_panic`]:
 	https://doc.rust-lang.org/1.73.0/reference/attributes/testing.html#the-should_panic-attribute
+[test harness]: https://doc.rust-lang.org/test
+[test targets]: https://doc.rust-lang.org/1.82.0/cargo/reference/cargo-targets.html#tests
 
 ## Benchmark
 
@@ -61,7 +149,7 @@ The only benchmark is marked as an example target because of the lack of Wasm su
 can use the following command:
 
 ```sh
-cargo build --example benchmark --target wasm32-unknown-unknown --profile bench
+RUSTFLAGS=-Ctarget-feature=+nontrapping-fptoint cargo build --workspace --example benchmark --target wasm32-unknown-unknown --profile bench
 wasm-bindgen --out-dir benches --target web --no-typescript target/wasm32-unknown-unknown/release/examples/benchmark.wasm
 ```
 
@@ -89,12 +177,12 @@ If you want to generate test coverage locally, here is an example shell script t
 ```sh
 # Single-threaded test run.
 st () {
-    CARGO_HOST_RUSTFLAGS=--cfg=wasm_bindgen_unstable_test_coverage RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg=wasm_bindgen_unstable_test_coverage" cargo +nightly test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config --tests $@
+    RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg=wasm_bindgen_unstable_test_coverage" cargo +nightly test --workspace --features serde --target wasm32-unknown-unknown --tests $@
 }
 
 # Multi-threaded test run.
 mt () {
-    CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" CARGO_HOST_RUSTFLAGS=--cfg=wasm_bindgen_unstable_test_coverage RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg=wasm_bindgen_unstable_test_coverage -Ctarget-feature=+atomics,+bulk-memory" cargo +nightly test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config -Zbuild-std=panic_abort,std --tests $@
+    CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg=wasm_bindgen_unstable_test_coverage -Ctarget-feature=+atomics,+bulk-memory" cargo +nightly test --workspace --features serde --target wasm32-unknown-unknown --tests $@
 }
 
 # To collect object files.
@@ -107,13 +195,13 @@ test () {
 
     # Run tests.
     mkdir -p coverage-input/$path
-    CHROMEDRIVER=chromedriver WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=coverage-input/$path $command
+    CHROMEDRIVER=chromedriver WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-input/$path) $command ${@:3}
 
     local crate_name=web_time
     local IFS=$'\n'
     for file in $(
         # Extract path to artifacts.
-        $command --no-run --message-format=json | \
+        $command ${@:3} --no-run --message-format=json | \
         jq -r "select(.reason == \"compiler-artifact\") | (select(.target.kind == [\"test\"]) // select(.target.name == \"$crate_name\")) | .filenames[0]"
     )
     do
@@ -135,10 +223,14 @@ test () {
 }
 
 test st 'st'
-test mt 'mt'
+test st 'st-no_std' --no-default-features
+test mt 'mt' -Zbuild-std=panic_abort,std
+test mt 'mt-no_std' -Zbuild-std=core,alloc --no-default-features
 
 # Merge all generated `*.profraw` files.
-llvm-profdata-19 merge -sparse coverage-input/*/*.profraw -o coverage-input/coverage.profdata
+rust-profdata merge -sparse coverage-input/*/*.profraw -o coverage-input/coverage.profdata
 # Finally generate coverage information.
-llvm-cov-19 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
+rust-cov show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
 ```
+
+[`no_std`]: https://doc.rust-lang.org/1.82.0/reference/names/preludes.html#the-no_std-attribute

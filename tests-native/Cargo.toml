@@ -1,0 +1,71 @@
+[package]
+autobenches = false
+edition = "2021"
+name = "tests-native"
+publish = false
+version = "0.0.0"
+
+[features]
+default = ["std"]
+run = []
+std = ["tests-web/std", "web-time/std"]
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+tests-web = { path = "../tests-web", default-features = false }
+
+[target.'cfg(not(target_family = "wasm"))'.dependencies]
+pollster = { version = "0.4", features = ["macro"] }
+serde-json-core = { version = "0.6", default-features = false, features = ["std"] }
+serde_json = "1"
+serde_test = "1"
+static_assertions = "1"
+wasm-bindgen-test = { version = "0.3" }
+web-time = { path = "../", default-features = false }
+
+[lib]
+doctest = false
+harness = false
+test = false
+
+[[test]]
+name = "native_instant_failure_1"
+path = "../tests/instant_failure_1.rs"
+required-features = ["run"]
+
+[[test]]
+name = "native_instant_failure_2"
+path = "../tests/instant_failure_2.rs"
+required-features = ["run"]
+
+[[test]]
+name = "native_instant_success"
+path = "../tests/instant_success.rs"
+required-features = ["run"]
+
+[[test]]
+name = "native_serde"
+path = "../tests/serde.rs"
+required-features = ["run"]
+
+[[test]]
+name = "native_system_time_failure_1"
+path = "../tests/system_time_failure_1.rs"
+required-features = ["run"]
+
+[[test]]
+name = "native_system_time_failure_2"
+path = "../tests/system_time_failure_2.rs"
+required-features = ["run"]
+
+[[test]]
+name = "native_system_time_success"
+path = "../tests/system_time_success.rs"
+required-features = ["run"]
+
+[[test]]
+name = "traits"
+path = "../tests/traits.rs"
+required-features = ["run"]
+
+[lints]
+workspace = true

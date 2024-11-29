@@ -1,23 +1,29 @@
-use std::future::Future;
-use std::pin::Pin;
-#[cfg(target_feature = "atomics")]
-use std::sync::atomic::{AtomicBool, Ordering};
-#[cfg(target_feature = "atomics")]
-use std::sync::Arc;
-use std::task::{ready, Context, Poll};
-use std::time::Duration;
+//! Web specific utility.
 
-#[cfg(target_feature = "atomics")]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
+extern crate alloc;
+
+#[cfg(all(target_feature = "atomics", feature = "std"))]
+use alloc::sync::Arc;
+use core::future::Future;
+use core::pin::Pin;
+#[cfg(all(target_feature = "atomics", feature = "std"))]
+use core::sync::atomic::{AtomicBool, Ordering};
+use core::task::{ready, Context, Poll};
+use core::time::Duration;
+
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 use futures_util::task::AtomicWaker;
 use js_sys::Promise;
-#[cfg(target_feature = "atomics")]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 use wasm_bindgen::prelude::wasm_bindgen;
-#[cfg(target_feature = "atomics")]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 use wasm_bindgen::{JsCast, JsValue};
 use wasm_bindgen_futures::JsFuture;
-#[cfg(target_feature = "atomics")]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 use web_sys::{DedicatedWorkerGlobalScope, Window};
 
+/// Async version of [`std::thread::sleep()`].
 pub(crate) struct Sleep(JsFuture);
 
 impl Future for Sleep {
@@ -30,15 +36,18 @@ impl Future for Sleep {
 }
 
 /// Sleeps for the given [`Duration`].
-#[allow(unused)]
+#[allow(clippy::allow_attributes, dead_code, reason = "not used by all tests")]
 pub(crate) fn sleep(duration: Duration) -> Sleep {
-	#[cfg(target_feature = "atomics")]
+	/// Holding the [global object](https://developer.mozilla.org/en-US/docs/Glossary/Global_object).
+	#[cfg(all(target_feature = "atomics", feature = "std"))]
 	enum Global {
+		/// The window.
 		Window(Window),
+		/// A dedicated worker.
 		DedicatedWorker(DedicatedWorkerGlobalScope),
 	}
 
-	#[cfg(target_feature = "atomics")]
+	#[cfg(all(target_feature = "atomics", feature = "std"))]
 	thread_local! {
 		/// Cached [`Global`].
 		static GLOBAL: Global = {
@@ -69,13 +78,13 @@ pub(crate) fn sleep(duration: Duration) -> Sleep {
 		JsFuture::from(Promise::new(&mut |resolve, _| {
 			let duration = duration.as_millis().try_into().unwrap();
 
-			#[cfg(not(target_feature = "atomics"))]
+			#[cfg(not(all(target_feature = "atomics", feature = "std")))]
 			web_sys::window()
 				.unwrap()
 				.set_timeout_with_callback_and_timeout_and_arguments_0(&resolve, duration)
 				.unwrap();
 
-			#[cfg(target_feature = "atomics")]
+			#[cfg(all(target_feature = "atomics", feature = "std"))]
 			GLOBAL
 				.with(|global| match global {
 					Global::Window(window) => window
@@ -90,19 +99,23 @@ pub(crate) fn sleep(duration: Duration) -> Sleep {
 }
 
 /// Can be awaited to wake up thread when signaled.
-#[cfg(target_feature = "atomics")]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 #[derive(Clone)]
 pub(crate) struct Flag(Arc<Inner>);
 
-#[cfg(target_feature = "atomics")]
+/// Shared data for [`Flag`].
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 struct Inner {
+	/// The registered thread to wake.
 	waker: AtomicWaker,
+	/// If the [`Flag`] was [`signal()`](Flag::signal)ed.
 	set: AtomicBool,
 }
 
-#[cfg(target_feature = "atomics")]
-#[allow(unused)]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
+#[allow(clippy::allow_attributes, dead_code, reason = "not used by all tests")]
 impl Flag {
+	/// Creates a new [`Flag`].
 	pub(crate) fn new() -> Self {
 		Self(Arc::new(Inner {
 			waker: AtomicWaker::new(),
@@ -119,7 +132,7 @@ impl Flag {
 	}
 }
 
-#[cfg(target_feature = "atomics")]
+#[cfg(all(target_feature = "atomics", feature = "std"))]
 impl Future for Flag {
 	type Output = ();
 

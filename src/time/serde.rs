@@ -4,21 +4,25 @@
 //! This implementation was copied from Serde's
 //! [`Deserialize`](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/de/impls.rs#L2168-L2314),
 //! and
-//! [`Sserialize`](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/ser/impls.rs#L730-L747)
+//! [`Serialize`](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/ser/impls.rs#L730-L747)
 //! implementation.
 
 #![allow(warnings)]
 
 // CHANGED: Replaced occurrences of `tri!` macro with `?`.
 
-use std::fmt;
-use std::time::Duration;
+extern crate alloc;
+
+use alloc::string::String;
+use core::fmt;
+use core::time::Duration;
 
 use serde::de::{Error, MapAccess, SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use super::SystemTime;
 
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl<'de> Deserialize<'de> for SystemTime {
 	fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
 	where
@@ -161,6 +165,7 @@ impl<'de> Deserialize<'de> for SystemTime {
 	}
 }
 
+#[cfg_attr(docsrs, doc(cfg(feature = "serde")))]
 impl Serialize for SystemTime {
 	fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
 	where

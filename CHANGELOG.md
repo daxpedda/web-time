@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Add [`no_std`] support through a `std` crate feature.
+- Add support for the [`wasm32v1-none`] target.
+
+[`no_std`]: https://doc.rust-lang.org/1.82.0/reference/names/preludes.html#the-no_std-attribute
+[`wasm32v1-none`]: https://doc.rust-lang.org/nightly/rustc/platform-support/wasm32v1-none.html
+
 ## [1.1.0] - 2024-03-01
 
 ### Added

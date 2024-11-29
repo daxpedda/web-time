@@ -1,19 +1,43 @@
 //! Re-implementation of [`std::time::SystemTime`].
 
+#![cfg_attr(
+	not(feature = "std"),
+	doc = "",
+	doc = "[`std::time::SystemTime`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html"
+)]
+
+#[cfg(all(doc, not(feature = "std")))]
+use core::error::Error;
+use core::fmt::{self, Display, Formatter};
+use core::ops::{Add, AddAssign, Sub, SubAssign};
+use core::time::Duration;
+#[cfg(feature = "std")]
 use std::error::Error;
-use std::fmt::{self, Display, Formatter};
-use std::ops::{Add, AddAssign, Sub, SubAssign};
-use std::time::Duration;
 
 /// See [`std::time::SystemTime`].
+#[cfg_attr(
+	not(feature = "std"),
+	doc = "",
+	doc = "[`std::time::SystemTime`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html"
+)]
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub struct SystemTime(pub(crate) Duration);
 
 impl SystemTime {
 	/// See [`std::time::SystemTime::UNIX_EPOCH`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTime::UNIX_EPOCH`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#associatedconstant.UNIX_EPOCH"
+	)]
 	pub const UNIX_EPOCH: Self = Self(Duration::ZERO);
 
 	/// See [`std::time::SystemTime::now()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTime::now()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.now"
+	)]
 	#[must_use]
 	#[allow(clippy::missing_panics_doc)]
 	pub fn now() -> Self {
@@ -25,6 +49,11 @@ impl SystemTime {
 	}
 
 	/// See [`std::time::SystemTime::duration_since()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTime::duration_since()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.duration_since"
+	)]
 	#[allow(clippy::missing_errors_doc, clippy::trivially_copy_pass_by_ref)]
 	pub fn duration_since(&self, earlier: Self) -> Result<Duration, SystemTimeError> {
 		if self.0 < earlier.0 {
@@ -35,18 +64,33 @@ impl SystemTime {
 	}
 
 	/// See [`std::time::SystemTime::elapsed()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTime::elapsed()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.elapsed"
+	)]
 	#[allow(clippy::missing_errors_doc, clippy::trivially_copy_pass_by_ref)]
 	pub fn elapsed(&self) -> Result<Duration, SystemTimeError> {
 		Self::now().duration_since(*self)
 	}
 
 	/// See [`std::time::SystemTime::checked_add()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTime::checked_add()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.checked_add"
+	)]
 	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn checked_add(&self, duration: Duration) -> Option<Self> {
 		self.0.checked_add(duration).map(SystemTime)
 	}
 
 	/// See [`std::time::SystemTime::checked_sub()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTime::checked_sub()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.checked_sub"
+	)]
 	#[allow(clippy::trivially_copy_pass_by_ref)]
 	pub fn checked_sub(&self, duration: Duration) -> Option<Self> {
 		self.0.checked_sub(duration).map(SystemTime)
@@ -89,12 +133,22 @@ impl SubAssign<Duration> for SystemTime {
 }
 
 /// See [`std::time::SystemTimeError`].
+#[cfg_attr(
+	not(feature = "std"),
+	doc = "",
+	doc = "[`std::time::SystemTimeError`]: https://doc.rust-lang.org/std/time/struct.SystemTimeError.html"
+)]
 #[derive(Clone, Debug)]
 #[allow(missing_copy_implementations)]
 pub struct SystemTimeError(Duration);
 
 impl SystemTimeError {
 	/// See [`std::time::SystemTimeError::duration()`].
+	#[cfg_attr(
+		not(feature = "std"),
+		doc = "",
+		doc = "[`std::time::SystemTimeError::duration()`]: https://doc.rust-lang.org/std/time/struct.SystemTimeError.html#method.duration"
+	)]
 	#[must_use]
 	#[allow(clippy::missing_const_for_fn)]
 	pub fn duration(&self) -> Duration {
@@ -108,4 +162,6 @@ impl Display for SystemTimeError {
 	}
 }
 
+#[cfg(any(feature = "std", docsrs))]
+#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
 impl Error for SystemTimeError {}

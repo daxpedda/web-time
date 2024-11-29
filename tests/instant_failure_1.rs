@@ -2,6 +2,8 @@
 //! problems with `panic = "abort"`.
 
 #![cfg(test)]
+#![cfg_attr(target_family = "wasm", no_main)]
+#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
 
 mod util;
 
@@ -9,8 +11,6 @@ use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::{Duration, Instant};
 
 use self::util::{sleep, DIFF};
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 /// [`Instant::add()`] failure.
 #[wasm_bindgen_test(unsupported = pollster::test)]
@@ -22,8 +22,12 @@ async fn add_failure() {
 
 /// [`Instant::sub()`] failure.
 #[wasm_bindgen_test(unsupported = test)]
-#[allow(clippy::unchecked_duration_subtraction)]
 #[should_panic = "overflow when subtracting duration from instant"]
+#[allow(
+	clippy::allow_attributes,
+	clippy::unchecked_duration_subtraction,
+	reason = "this is what we are testing"
+)]
 fn sub_failure() {
 	let _ = Instant::now() - Duration::MAX;
 }

@@ -1,0 +1,144 @@
+[package]
+autobenches = false
+edition = "2021"
+name = "tests-web"
+publish = false
+version = "0.0.0"
+
+[features]
+default = ["std"]
+run = []
+serde = ["serde_test", "serde_json", "serde-json-core"]
+std = [
+	"wasm-bindgen/std",
+	"js-sys/std",
+	"web-sys/std",
+	"wasm-bindgen-futures/std",
+	"wasm-bindgen-test/std",
+	"serde_test?/std",
+	"serde_json?/std",
+	"serde-json-core?/std",
+	"getrandom/std",
+	"rand/std",
+	"once_cell/std",
+	"futures-util/std",
+	"futures-channel/std",
+	"web-thread",
+	"web-time/std",
+]
+
+[target.'cfg(target_family = "wasm")'.dependencies]
+const_soft_float = { version = "0.1", features = ["no_std"] }
+dlmalloc = "0.2"
+getrandom = { version = "0.2", features = ["js"] }
+js-sys = { version = "0.3", default-features = false }
+rand = { version = "0.8", default-features = false, features = ["getrandom", "std_rng"] }
+serde-json-core = { version = "0.6", optional = true, default-features = false }
+serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
+serde_test = { version = "1", optional = true, default-features = false }
+static_assertions = "1"
+wasm-bindgen = { version = "0.2", default-features = false }
+wasm-bindgen-futures = { version = "0.4", default-features = false }
+wasm-bindgen-test = { version = "0.3", default-features = false }
+web-sys = { version = "0.3", default-features = false, features = [
+	"CssStyleDeclaration",
+	"Document",
+	"Element",
+	"HtmlTableElement",
+	"HtmlTableRowElement",
+	"Performance",
+	"Window",
+] }
+web-time = { path = "../", default-features = false }
+
+[target.'cfg(all(target_family = "wasm", target_feature = "atomics"))'.dependencies]
+critical-section = { version = "1", features = ["restore-state-bool"] }
+futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
+futures-util = { version = "0.3", default-features = false }
+once_cell = { version = "1", default-features = false, features = ["critical-section"] }
+web-sys = { version = "0.3", default-features = false, features = [
+	"DedicatedWorkerGlobalScope",
+	"OfflineAudioContext",
+	"WorkerGlobalScope",
+] }
+web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92354cbe0a0c07e71b9888be8b3e45999", optional = true, features = [
+	"audio-worklet",
+] }
+
+[lib]
+doctest = false
+harness = false
+test = false
+
+[[example]]
+harness = false
+name = "benchmark"
+path = "../benches/benchmark.rs"
+required-features = ["run"]
+test = false
+
+[[test]]
+name = "atomic_failure"
+path = "../tests/atomic_failure.rs"
+required-features = ["std", "run"]
+
+[[test]]
+name = "atomic_success"
+path = "../tests/atomic_success.rs"
+required-features = ["std", "run"]
+
+[[test]]
+harness = false
+name = "web_instant_failure_1"
+path = "../tests/instant_failure_1.rs"
+required-features = ["run"]
+
+[[test]]
+harness = false
+name = "web_instant_failure_2"
+path = "../tests/instant_failure_2.rs"
+required-features = ["run"]
+
+[[test]]
+harness = false
+name = "web_instant_success"
+path = "../tests/instant_success.rs"
+required-features = ["run"]
+
+[[test]]
+harness = false
+name = "web_serde"
+path = "../tests/serde.rs"
+required-features = ["serde", "run"]
+
+[[test]]
+harness = false
+name = "web_system_time_failure_1"
+path = "../tests/system_time_failure_1.rs"
+required-features = ["run"]
+
+[[test]]
+harness = false
+name = "web_system_time_failure_2"
+path = "../tests/system_time_failure_2.rs"
+required-features = ["run"]
+
+[[test]]
+harness = false
+name = "web_system_time_success"
+path = "../tests/system_time_success.rs"
+required-features = ["run"]
+
+[[test]]
+harness = false
+name = "web_traits"
+path = "../tests/traits.rs"
+required-features = ["run"]
+
+[[test]]
+name = "web"
+path = "../tests/web.rs"
+required-features = ["std", "run"]
+
+[lints]
+workspace = true

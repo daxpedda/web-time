@@ -1,7 +1,8 @@
 //! Test Web-specific API exported in [`web_time::web`].
 
 #![cfg(test)]
-#![cfg(target_family = "wasm")]
+
+mod util;
 
 use std::time;
 use std::time::Duration;
@@ -9,8 +10,7 @@ use std::time::Duration;
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::web::SystemTimeExt;
 
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
+/// Testing conversion from [`web_time`] to [`std`].
 #[wasm_bindgen_test]
 fn to_std() {
 	assert_eq!(
@@ -25,6 +25,7 @@ fn to_std() {
 	);
 }
 
+/// Testing conversion from [`std`] to [`web_time`].
 #[wasm_bindgen_test]
 fn from_std() {
 	assert_eq!(

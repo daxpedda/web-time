@@ -1,22 +1,20 @@
 //! Run tests with the atomics target feature.
 
 #![cfg(test)]
-#![cfg(all(target_family = "wasm", target_feature = "atomics"))]
+#![cfg(target_feature = "atomics")]
 
 mod util;
 
 use futures_util::future;
 use futures_util::future::Either;
-use util::MAX_DIFF;
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_sys::OfflineAudioContext;
 use web_thread::web::audio_worklet::BaseAudioContextExt;
 use web_time::Instant;
 
-use self::util::Flag;
+use self::util::{Flag, MAX_DIFF};
 
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
+/// Testing failure of [`Instant::now()`] in audio worklet.
 #[wasm_bindgen_test]
 async fn test() {
 	let context =

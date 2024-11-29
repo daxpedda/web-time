@@ -15,7 +15,7 @@ env:
 
 jobs:
   coverage:
-    name: Test Coverage ${{ matrix.mt.description }}
+    name: Test Coverage ${{ matrix.mt.description }} ${{ matrix.features.description }}
 
     runs-on: ubuntu-latest
 
@@ -24,15 +24,24 @@ jobs:
     strategy:
       matrix:
         mt:
-          - { id: 0 }
+          - { id: "st" }
           - {
-              id: 1,
+              id: "mt",
               description: with Atomics,
               component: --component rust-src,
               cflags: -matomics -mbulk-memory,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
-              args: "-Zbuild-std=panic_abort,std",
+              build-std: true,
             }
+        features:
+          - { id: "", features: "", no_std: false }
+          - { id: -no_std, features: --no-default-features, no_std: true, description: (`no_std`) }
+
+    env:
+      CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
+      RUSTFLAGS:
+        -Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir
+        --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
 
     steps:
       - name: Checkout
@@ -50,31 +59,25 @@ jobs:
         run: |
           rustup toolchain install nightly --profile minimal --target wasm32-unknown-unknown ${{ matrix.mt.component }}
           rustup default nightly
+      - name: Set `build-std` components
+        if: matrix.mt.build-std == true && matrix.features.no_std == false
+        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=panic_abort,std" >> $GITHUB_ENV
+      - name: Set `build-std` `no_std` components
+        if: matrix.mt.build-std == true && matrix.features.no_std == true
+        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Test
         env:
           CHROMEDRIVER: chromedriver
-          CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
-          CARGO_HOST_RUSTFLAGS: --cfg=wasm_bindgen_unstable_test_coverage
-          RUSTFLAGS:
-            -Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir
-            --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
-          WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT: coverage-output
         run: |
           mkdir coverage-output
-          cargo test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests
+          WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-output) cargo test --workspace --features serde --target wasm32-unknown-unknown $BUILD_STD_COMPONENTS ${{ matrix.features.features }} --tests
       - name: Prepare Object Files
-        env:
-          CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
-          CARGO_HOST_RUSTFLAGS: --cfg=wasm_bindgen_unstable_test_coverage
-          RUSTFLAGS:
-            -Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir
-            --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
         run: |
           mkdir coverage-input
           crate_name=web_time
           IFS=$'\n'
           for file in $(
-            cargo test --all-features --target wasm32-unknown-unknown -Ztarget-applies-to-host -Zhost-config ${{ matrix.mt.args }} --tests --no-run --message-format=json | \
+            cargo test --workspace --features serde --target wasm32-unknown-unknown $BUILD_STD_COMPONENTS ${{ matrix.features.features }} --tests --no-run --message-format=json | \
             jq -r "select(.reason == \"compiler-artifact\") | (select(.target.kind == [\"test\"]) // select(.target.name == \"$crate_name\")) | .filenames[0]"
           )
           do
@@ -90,7 +93,7 @@ jobs:
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: test-coverage-${{ matrix.mt.id }}
+          name: test-coverage-${{ matrix.mt.id }}${{ matrix.features.id }}
           path: coverage-output
           retention-days: 1
           if-no-files-found: error
@@ -105,11 +108,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Install LLVM v19
+      - name: Install Rust nightly
         run: |
-          wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
-          sudo add-apt-repository "deb http://apt.llvm.org/jammy/ llvm-toolchain-jammy-19 main"  
-          sudo apt-get install llvm-19
+          rustup toolchain install nightly --profile minimal --component llvm-tools
+          rustup default nightly
+      - name: Install `cargo-binutils`
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-binutils
       - name: Download Test Coverage
         uses: actions/download-artifact@v4
         with:
@@ -117,8 +123,7 @@ jobs:
           path: coverage-input
       - name: Merge Profile Data
         run:
-          llvm-profdata-19 merge -sparse coverage-input/*/*.profraw -o
-          coverage-input/coverage.profdata
+          rust-profdata merge -sparse coverage-input/*/*.profraw -o coverage-input/coverage.profdata
       - name: Export Code Coverage Report
         run: |
           mkdir coverage-output
@@ -127,16 +132,15 @@ jobs:
           do
               objects+=(-object $file)
           done
-          llvm-cov-19 show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
-          llvm-cov-19 export -format=text -summary-only -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src | \
+          rust-cov show -show-instantiations=false -output-dir coverage-output -format=html -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src
+          rust-cov export -format=text -summary-only -instr-profile=coverage-input/coverage.profdata ${objects[@]} -sources src | \
           printf '{ "coverage": "%.2f%%" }' $(jq '.data[0].totals.functions.percent') > coverage-output/coverage.json
-          sed 's/<!doctype html>//' coverage-output/index.html | perl -p0e 's/<a[^>]*>((?!here).*?)<\/a>/$1/g' >> $GITHUB_STEP_SUMMARY
+          sed 's/<!doctype html>//' coverage-output/index.html | sed "s/<script src='control.js'><\/script>//" | perl -p0e 's/<a[^>]*>((?!here).*?)<\/a>/$1/g' >> $GITHUB_STEP_SUMMARY
       - name: Upload Test Coverage Artifact
         uses: actions/upload-artifact@v4
         with:
           name: test-coverage
           path: coverage-output
-          retention-days: 1
           if-no-files-found: error
 
   document:
@@ -158,7 +162,7 @@ jobs:
           RUSTDOCFLAGS: --crate-version main --cfg=docsrs
         run:
           cargo doc --no-deps -Z rustdoc-map -Z rustdoc-scrape-examples --target
-          wasm32-unknown-unknown --all-features
+          wasm32-unknown-unknown --features serde
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Fix permissions

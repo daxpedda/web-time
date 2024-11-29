@@ -1,2 +1,2 @@
-[target.wasm32-unknown-unknown]
+[target.'cfg(target_family = "wasm")']
 runner = "wasm-bindgen-test-runner"

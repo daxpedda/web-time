@@ -15,20 +15,17 @@ Currently [`Instant::now()`] and [`SystemTime::now()`] will simply panic when us
 [`Date.now()`] for [`SystemTime`] to offer a drop-in replacement that works in browsers.
 
 At the same time the library will simply re-export [`std::time`] when not using the
-`wasm32-unknown-unknown` target and will not pull in any dependencies.
+`wasm32-unknown-unknown` or `wasm32v1-none` target and will not pull in any dependencies.
 
 Additionally, if compiled with `target-feature = "atomics"` it will synchronize the timestamps to
 account for different context's, like web workers. See [`Performance.timeOrigin`] for more
 information.
 
-Using `-Ctarget-feature=+nontrapping-fptoint` will improve the performance of [`Instant::now()`] and
-[`SystemTime::now()`], but the vast majority of the time is still spent going through JS.
-
 ## Target
 
 This library specifically targets browsers, that support [`Performance.now()`], with the
-`wasm32-unknown-unknown` target. Emscripten is not supported. WASI doesn't require support as it has
-it's own native API to deal with [`std::time`].
+`wasm32-unknown-unknown` or `wasm32v1-none` target. Emscripten is not supported. WASI doesn't
+require support as it has it's own native API to deal with [`std::time`].
 
 Furthermore it depends on [`wasm-bindgen`], which is required. This library will continue to depend
 on it until a viable alternative presents itself, in which case multiple ecosystems could be
@@ -63,7 +60,18 @@ let now = Instant::now();
 let time = SystemTime::now();
 ```
 
+Using `-Ctarget-feature=+nontrapping-fptoint` will improve the performance of [`Instant::now()`] and
+[`SystemTime::now()`], but the vast majority of the time is still spent going through JS.
+
 ## Features
+
+### `std` (enabled by default)
+
+Enables the corresponding crate feature in all dependencies and allows for some optimized
+instruction output.
+
+Without this crate feature compilation the standard library is not included. Has no effect on
+targets other then `wasm32-unknown-unknown` or `wasm32v1-none`.
 
 ### `serde`
 
@@ -126,7 +134,7 @@ additional terms or conditions.
 [`Instant::now()`]: https://doc.rust-lang.org/std/time/struct.Instant.html#method.now
 [`SystemTime`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html
 [`SystemTime::now()`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html#method.now
-[`std::time`]: https://doc.rust-lang.org/stable/std/time/
+[`std::time`]: https://doc.rust-lang.org/std/time/
 [`performance.now()`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
 [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
 [`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property

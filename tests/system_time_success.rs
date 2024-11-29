@@ -1,20 +1,26 @@
 //! [`SystemTime`] tests.
 
 #![cfg(test)]
-#![allow(clippy::missing_assert_message)]
+#![cfg_attr(target_family = "wasm", no_main)]
+#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
+
+extern crate alloc;
 
 mod util;
 
-use util::MAX_DIFF;
+use alloc::string::ToString;
+
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::{Duration, SystemTime};
 
-use self::util::{sleep, DIFF};
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
+use self::util::{sleep, DIFF, MAX_DIFF};
 
 /// [`SystemTime::UNIX_EPOCH`].
-#[allow(clippy::eq_op)]
+#[allow(
+	clippy::allow_attributes,
+	clippy::eq_op,
+	reason = "thats what we are testing"
+)]
 #[wasm_bindgen_test(unsupported = test)]
 fn unix_epoch() {
 	let time = SystemTime::UNIX_EPOCH.elapsed().unwrap();

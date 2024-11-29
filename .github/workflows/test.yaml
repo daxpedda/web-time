@@ -13,146 +13,174 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-test:
+  test:
     name:
-      ${{ matrix.rust.pre_description }} ${{ matrix.driver.description }} ${{
-      matrix.rust.post_description }} ${{ matrix.features.description }}
+      Test ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      matrix.features.description }}
 
-    runs-on: ${{ matrix.driver.os }}
+    runs-on: ${{ matrix.target.os }}
 
     timeout-minutes: 10
 
     strategy:
       fail-fast: false
       matrix:
-        driver:
+        target:
           - {
               os: ubuntu-latest,
+              target: wasm32-unknown-unknown,
               description: Chrome,
-              default: true,
               name: CHROMEDRIVER,
               value: chromedriver,
             }
-          - { os: ubuntu-latest, description: Firefox, name: GECKODRIVER, value: geckodriver }
-          - { os: macos-latest, description: Safari, name: SAFARIDRIVER, value: safaridriver }
+          - {
+              os: ubuntu-latest,
+              target: wasm32-unknown-unknown,
+              description: Firefox,
+              name: GECKODRIVER,
+              value: geckodriver,
+            }
+          - {
+              os: macos-latest,
+              target: wasm32-unknown-unknown,
+              description: Safari,
+              name: SAFARIDRIVER,
+              value: safaridriver,
+            }
         rust:
-          - { version: stable, pre_description: Build & Test, msrv: false }
+          - { version: stable }
           - {
               version: nightly,
-              pre_description: Build & Test,
-              post_description: with Atomics,
-              msrv: false,
+              description: with Atomics,
               component: --component rust-src,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
-              args: "-Zbuild-std=panic_abort,std",
+              build-std: true,
             }
-        target:
-          - { target: wasm32-unknown-unknown, native: false, docargs: -Zdoctest-xcompile }
         features:
-          - { features: "" }
-          - { features: --all-features, description: (all features) }
+          - { features: "", no_std: false }
+          - { features: --no-default-features, no_std: true, description: "(`no_std`)" }
         include:
-          - driver: { os: ubuntu-latest, description: Web, default: true }
-            rust: { version: "1.60", pre_description: Build, post_description: MSRV, msrv: true }
-            target: { target: wasm32-unknown-unknown, native: false }
-            features: { features: "" }
-          - driver: { os: ubuntu-latest, description: Native }
-            rust: { version: "1.60", pre_description: Build, post_description: MSRV, msrv: true }
-            target: { target: x86_64-unknown-linux-gnu, native: true }
-            features: { features: "" }
-          - driver: { os: ubuntu-latest, description: Native }
-            rust: { version: stable, pre_description: Build & Test, msrv: false }
-            target: { target: x86_64-unknown-linux-gnu, native: true }
-            features: { features: "" }
+          - target:
+              {
+                os: ubuntu-latest,
+                target: x86_64-unknown-linux-gnu,
+                description: Native,
+                native: true,
+              }
+            rust: { version: stable }
+            features: { features: "", no_std: false }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install `wasm-bindgen-cli`
-        uses: taiki-e/cache-cargo-install-action@v2
+        uses: taiki-e/install-action@v2
         with:
           tool: wasm-bindgen-cli
-          git: https://github.com/daxpedda/wasm-bindgen
-          rev: 6a5e62b1d89c9e927747700b5908b257761c9280
       - name: Install Rust
         run: |
           rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
-      - name: Fix MSRV dependencies
-        if: matrix.rust.msrv == true
-        run: |
-          cargo update -p bumpalo --precise 3.14.0
-          cargo update -p serde --precise 1.0.210
-          cargo update -p syn --precise 2.0.67
-      - name: Build
-        if: matrix.driver.default == true || matrix.target.native == true
-        env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
-        run:
-          cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }} ${{
-          matrix.rust.args }}
-      - name: Documentation
-        if: matrix.driver.default == true || matrix.target.native == true
-        env:
-          RUSTDOCFLAGS: ${{ matrix.rust.flags }}
-          RUSTFLAGS: ${{ matrix.rust.flags }}
-        run:
-          cargo doc --no-deps ${{ matrix.features.features }} --target ${{ matrix.target.target }}
-          ${{ matrix.rust.args }}
+      - name: Set `build-std` components
+        if: matrix.rust.build-std == true && matrix.features.no_std == false
+        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=panic_abort,std" >> $GITHUB_ENV
+      - name: Set `build-std` `no_std` components
+        if: matrix.rust.build-std == true && matrix.features.no_std == true
+        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Set Driver
-        if: matrix.rust.msrv == false && matrix.target.native == false
-        run: echo "${{ matrix.driver.name }}=${{ matrix.driver.value }}" >> $GITHUB_ENV
+        if: matrix.target.native == false
+        run: echo "${{ matrix.target.name }}=${{ matrix.target.value }}" >> $GITHUB_ENV
       - name: Test
-        if: matrix.rust.msrv == false
+        env:
+          RUSTFLAGS: ${{ matrix.rust.flags }}
         run:
-          cargo test ${{ matrix.features.features }} --all-targets --no-fail-fast --target ${{
-          matrix.target.target }} ${{ matrix.rust.args }}
-      - name: Switch to nightly Rust for Wasm documentation tests
-        if:
-          matrix.rust.msrv == false && matrix.target.native == false && matrix.rust.version !=
-          'nightly'
-        run: |
-          rustup toolchain install nightly --profile minimal --target ${{ matrix.target.target }}
-          rustup default nightly
-      - name: Documentation Test
-        if: matrix.rust.msrv == false
-        run:
-          cargo test ${{ matrix.features.features }} --doc --no-fail-fast --target ${{
-          matrix.target.target }} ${{ matrix.rust.args }} ${{ matrix.target.docargs }}
+          cargo test --features serde ${{ matrix.features.features }} --target ${{
+          matrix.target.target }} $BUILD_STD_COMPONENTS --workspace --all-targets
 
-  minimal-versions:
+  doctest:
     name:
-      Minimal Versions ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      Doctest ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
       matrix.features.description }}
 
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: minimal-versions
+    runs-on: ${{ matrix.target.os }}
+
+    timeout-minutes: 10
 
     strategy:
       fail-fast: false
       matrix:
-        rust:
-          - { version: "1.60", description: MSRV }
-          - { version: stable }
         target:
-          - { target: x86_64-unknown-linux-gnu, description: Native }
-          - { target: wasm32-unknown-unknown, description: Web }
+          - {
+              os: ubuntu-latest,
+              target: wasm32-unknown-unknown,
+              description: Chrome,
+              name: CHROMEDRIVER,
+              value: chromedriver,
+            }
+          - {
+              os: ubuntu-latest,
+              target: wasm32-unknown-unknown,
+              description: Firefox,
+              name: GECKODRIVER,
+              value: geckodriver,
+            }
+          - {
+              os: macos-latest,
+              target: wasm32-unknown-unknown,
+              description: Safari,
+              name: SAFARIDRIVER,
+              value: safaridriver,
+            }
+        rust:
+          - { version: nightly }
+          - {
+              version: nightly,
+              description: with Atomics,
+              component: --component rust-src,
+              flags: "-Ctarget-feature=+atomics,+bulk-memory",
+              build-std: true,
+            }
         features:
-          - { features: "" }
-          - { features: --all-features, description: (all features) }
+          - { features: "", no_std: false }
+          - { features: --no-default-features, no_std: true, description: "(`no_std`)" }
+        include:
+          - target:
+              {
+                os: ubuntu-latest,
+                target: x86_64-unknown-linux-gnu,
+                description: Native,
+                native: true,
+              }
+            rust: { version: stable }
+            features: { features: "", no_std: false }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install `wasm-bindgen-cli`
+        uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen-cli
       - name: Install Rust
         run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --target ${{ matrix.target.target }}
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
-      - name: Install Rust nightly
-        run: rustup toolchain install nightly --profile minimal
-      - name: Build
+      - name: Set `build-std` components
+        if: matrix.rust.build-std == true && matrix.features.no_std == false
+        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=panic_abort,std" >> $GITHUB_ENV
+      - name: Set `build-std` `no_std` components
+        if: matrix.rust.build-std == true && matrix.features.no_std == true
+        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
+      - name: Set Driver and enable cross-compilation
+        if: matrix.target.native == false
         run: |
-          cargo +nightly update -Z minimal-versions
-          cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }}
+          echo "${{ matrix.target.name }}=${{ matrix.target.value }}" >> $GITHUB_ENV
+          echo "DOCTEST_XCOMPILE_ARG=-Zdoctest-xcompile" >> $GITHUB_ENV
+      - name: Doctest
+        env:
+          RUSTFLAGS: ${{ matrix.rust.flags }}
+          RUSTDOCFLAGS: ${{ matrix.rust.flags }}
+        run:
+          cargo test --features serde ${{ matrix.features.features }} --target ${{
+          matrix.target.target }} $BUILD_STD_COMPONENTS --workspace --doc ${{ matrix.target.args }}
+          $DOCTEST_XCOMPILE_ARG

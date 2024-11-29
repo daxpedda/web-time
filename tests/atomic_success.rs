@@ -1,7 +1,7 @@
 //! Run tests with the atomics target feature.
 
 #![cfg(test)]
-#![cfg(all(target_family = "wasm", target_feature = "atomics"))]
+#![cfg(target_feature = "atomics")]
 
 mod util;
 
@@ -11,8 +11,6 @@ use web_thread::web;
 use web_time::{Duration, Instant};
 
 use self::util::{sleep, Flag, DIFF};
-
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 #[wasm_bindgen_test]
 async fn basic() {

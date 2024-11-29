@@ -1,4 +1,4 @@
-name: Lint
+name: Build
 
 on:
   push:
@@ -13,9 +13,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  clippy:
+  build:
     name:
-      Clippy ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      Build ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
       matrix.features.description }}
 
     runs-on: ubuntu-latest
@@ -28,70 +28,7 @@ jobs:
           - { target: wasm32-unknown-unknown, description: Web }
           - { target: wasm32v1-none, description: Wasm v1 }
         rust:
-          - { version: stable, atomics: false }
-          - { version: nightly, atomics: false }
-          - {
-              version: nightly,
-              description: with Atomics,
-              atomics: true,
-              component: ",rust-src",
-              flags: "-Ctarget-feature=+atomics,+bulk-memory",
-              build-std: true,
-            }
-        features:
-          - { features: "", no_std: false }
-          - { features: --features serde, no_std: false, description: (`serde`) }
-          - { features: --no-default-features, no_std: true, description: (`no_std`) }
-          - {
-              features: --no-default-features --features serde,
-              no_std: true,
-              description: "(`no_std`, `serde`)",
-            }
-        exclude:
-          - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            rust: { version: nightly }
-          - target: { target: wasm32-unknown-unknown, description: Web }
-            rust: { version: nightly, atomics: false }
-          - target: { target: wasm32v1-none, description: Wasm v1 }
-            rust: { version: stable }
-          - target: { target: wasm32v1-none, description: Wasm v1 }
-            features: { no_std: false }
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install Rust
-        run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --component clippy${{ matrix.rust.component }} --allow-downgrade --target ${{ matrix.target.target }}
-          rustup default ${{ matrix.rust.version }}
-      - name: Set `build-std` components
-        if: matrix.rust.build-std == true && matrix.features.no_std == false
-        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=panic_abort,std" >> $GITHUB_ENV
-      - name: Set `build-std` `no_std` components
-        if: matrix.rust.build-std == true && matrix.features.no_std == true
-        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
-      - name: Run Clippy
-        env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
-        run:
-          cargo clippy --workspace --all-targets ${{ matrix.features.features }} --target ${{
-          matrix.target.target }} $BUILD_STD_COMPONENTS -- -D warnings
-
-  rustdoc:
-    name:
-      Rustdoc ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
-      matrix.features.description }} ${{ matrix.docsrs.description }}
-
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - { target: x86_64-unknown-linux-gnu, description: Native }
-          - { target: wasm32-unknown-unknown, description: Web }
-          - { target: wasm32v1-none, description: Wasm v1 }
-        rust:
+          - { version: "1.60", description: MSRV, atomics: false }
           - { version: stable, atomics: false }
           - { version: nightly, atomics: false }
           - {
@@ -111,20 +48,13 @@ jobs:
               no_std: true,
               description: "(`no_std`, `serde`)",
             }
-        docsrs:
-          - { flags: "", nightly: false }
-          - { description: (docs.rs), flags: --cfg=docsrs, nightly: true }
         exclude:
-          - docsrs: { flags: --cfg=docsrs, nightly: true }
-            rust: { version: stable }
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            rust: { atomics: true }
-          - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            docsrs: { flags: "", nightly: false }
             rust: { version: nightly }
           - target: { target: wasm32-unknown-unknown, description: Web }
-            docsrs: { flags: "", nightly: false }
             rust: { version: nightly, atomics: false }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            rust: { version: "1.60" }
           - target: { target: wasm32v1-none, description: Wasm v1 }
             rust: { version: stable }
           - target: { target: wasm32v1-none, description: Wasm v1 }
@@ -143,10 +73,76 @@ jobs:
       - name: Set `build-std` `no_std` components
         if: matrix.rust.build-std == true && matrix.features.no_std == true
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
-      - name: Run Rustdoc
+      - name: Fix MSRV dependencies
+        if: matrix.rust.version == '1.60'
+        run: |
+          cargo update -p bumpalo --precise 3.14.0
+          cargo update -p serde --precise 1.0.210
+          cargo update -p syn --precise 2.0.67
+      - name: Build
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
-          RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }} ${{ matrix.docsrs.flags }}
         run:
-          cargo doc --workspace --no-deps --document-private-items --lib --examples ${{
-          matrix.features.features }} --target ${{ matrix.target.target }} $BUILD_STD_COMPONENTS
+          cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }}
+          $BUILD_STD_COMPONENTS
+
+  minimal-versions:
+    name:
+      Minimal Versions ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
+      matrix.features.description }}
+
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: minimal-versions
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { target: x86_64-unknown-linux-gnu, description: Native }
+          - { target: wasm32-unknown-unknown, description: Web }
+          - { target: wasm32v1-none, description: Wasm v1 }
+        rust:
+          - { version: "1.60", description: MSRV }
+          - { version: stable }
+          - { version: nightly }
+        features:
+          - { features: "", no_std: false }
+          - { features: --features serde, no_std: false, description: (`serde`) }
+          - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - {
+              features: --no-default-features --features serde,
+              no_std: true,
+              description: "(`no_std`, `serde`)",
+            }
+        exclude:
+          - target: { target: x86_64-unknown-linux-gnu, description: Native }
+            rust: { version: nightly }
+          - target: { target: wasm32-unknown-unknown, description: Web }
+            rust: { version: nightly }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            rust: { version: "1.60" }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            rust: { version: stable }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            features: { no_std: false }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --target ${{ matrix.target.target }}
+          rustup default ${{ matrix.rust.version }}
+      - name: Downgrade to minimal versions
+        run: |
+          rustup toolchain install nightly --profile minimal
+          cargo +nightly update -Z minimal-versions
+      - name: Fix Rust nightly incompatible dependencies
+        if: matrix.rust.version == 'nightly'
+        run: |
+          cargo update -p proc-macro2 --precise 1.0.60
+      - name: Build
+        run: cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }}
