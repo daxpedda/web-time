@@ -1,5 +1,4 @@
 [package]
-autobenches = false
 edition = "2021"
 name = "tests-web"
 publish = false
@@ -66,6 +65,7 @@ web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92
 ] }
 
 [lib]
+bench = false
 doctest = false
 harness = false
 test = false

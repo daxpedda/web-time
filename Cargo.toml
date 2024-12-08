@@ -60,6 +60,7 @@ codegen-units = 1
 lto = true
 
 [lib]
+bench = false
 harness = false
 
 [package.metadata.docs.rs]

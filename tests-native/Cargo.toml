@@ -1,5 +1,4 @@
 [package]
-autobenches = false
 edition = "2021"
 name = "tests-native"
 publish = false
@@ -23,6 +22,7 @@ wasm-bindgen-test = { version = "0.3" }
 web-time = { path = "../", default-features = false }
 
 [lib]
+bench = false
 doctest = false
 harness = false
 test = false
