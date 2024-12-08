@@ -90,10 +90,10 @@
 //! This requires Rust nightly and enhances the documentation. It must only be
 //! used with `RUSTDOCFLAGS`, not with `RUSTFLAGS`.
 //!
-//! # MSRV
+//! # MSRV Policy
 //!
-//! As this library heavily relies on [`wasm-bindgen`] the MSRV depends on it.
-//! At the point of time this was written the MSRV is 1.60.
+//! The MSRV is v1.60. Changes to the MSRV will be accompanied by a minor
+//! version bump.
 //!
 //! # Contributing
 //!

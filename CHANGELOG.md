@@ -11,6 +11,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Add [`no_std`] support through a `std` crate feature.
 - Add support for the [`wasm32v1-none`] target.
+- Add MSRV policy.
 
 ### Fixed
 
