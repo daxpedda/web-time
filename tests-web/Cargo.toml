@@ -26,7 +26,7 @@ std = [
 	"web-time/std",
 ]
 
-[target.'cfg(target_family = "wasm")'.dependencies]
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 const_soft_float = { version = "0.1", features = ["no_std"] }
 dlmalloc = "0.2"
 getrandom = { version = "0.2", features = ["js"] }
@@ -50,7 +50,7 @@ web-sys = { version = "0.3", default-features = false, features = [
 ] }
 web-time = { path = "../", default-features = false }
 
-[target.'cfg(all(target_family = "wasm", target_feature = "atomics"))'.dependencies]
+[target.'cfg(all(target_arch = "wasm32", target_feature = "atomics"))'.dependencies]
 critical-section = { version = "1", features = ["restore-state-bool"] }
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }

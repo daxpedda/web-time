@@ -1,8 +1,8 @@
 //! [`serde`] tests for [`SystemTime`].
 
 #![cfg(test)]
-#![cfg_attr(target_family = "wasm", no_main)]
-#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
+#![cfg_attr(target_arch = "wasm32", no_main)]
+#![cfg_attr(all(target_arch = "wasm32", not(feature = "std")), no_std)]
 
 extern crate alloc;
 

@@ -12,6 +12,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Add [`no_std`] support through a `std` crate feature.
 - Add support for the [`wasm32v1-none`] target.
 
+### Fixed
+
+- As `wasm64-*` is not supported, `web-time` now falls back to `std` instead of unnecessarily
+  pulling in dependencies on these targets.
+
 [`no_std`]: https://doc.rust-lang.org/1.82.0/reference/names/preludes.html#the-no_std-attribute
 [`wasm32v1-none`]: https://doc.rust-lang.org/nightly/rustc/platform-support/wasm32v1-none.html
 

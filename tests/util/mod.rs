@@ -1,22 +1,22 @@
 //! Utility types and functions.
 
-#[cfg(not(target_family = "wasm"))]
+#[cfg(not(target_arch = "wasm32"))]
 mod std;
-#[cfg(target_family = "wasm")]
+#[cfg(target_arch = "wasm32")]
 mod web;
 
-#[cfg(target_family = "wasm")]
+#[cfg(target_arch = "wasm32")]
 use tests_web as _;
 use web_time::Duration;
 
-#[cfg(not(target_family = "wasm"))]
+#[cfg(not(target_arch = "wasm32"))]
 #[allow(
 	clippy::allow_attributes,
 	unused_imports,
 	reason = "not used by all tests"
 )]
 pub(crate) use self::std::*;
-#[cfg(target_family = "wasm")]
+#[cfg(target_arch = "wasm32")]
 #[allow(
 	clippy::allow_attributes,
 	unused_imports,

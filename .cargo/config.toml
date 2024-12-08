@@ -1,2 +1,2 @@
-[target.'cfg(target_family = "wasm")']
+[target.'cfg(target_arch = "wasm32")']
 runner = "wasm-bindgen-test-runner"

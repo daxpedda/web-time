@@ -9,10 +9,10 @@ default = ["std"]
 run = []
 std = ["tests-web/std", "web-time/std"]
 
-[target.'cfg(target_family = "wasm")'.dependencies]
+[target.'cfg(target_arch = "wasm32")'.dependencies]
 tests-web = { path = "../tests-web", default-features = false }
 
-[target.'cfg(not(target_family = "wasm"))'.dependencies]
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 pollster = { version = "0.4", features = ["macro"] }
 serde-json-core = { version = "0.6", default-features = false, features = ["std"] }
 serde_json = "1"

@@ -7,7 +7,7 @@ use std::time::SystemTime as StdSystemTime;
 use crate::SystemTime;
 
 #[cfg(all(
-	target_family = "wasm",
+	target_arch = "wasm32",
 	any(target_os = "unknown", target_os = "none"),
 	not(feature = "std"),
 ))]
@@ -33,7 +33,7 @@ pub trait SystemTimeExt {
 	/// internally, which would panic.
 	#[cfg_attr(
 		all(
-			target_family = "wasm",
+			target_arch = "wasm32",
 			any(target_os = "unknown", target_os = "none"),
 			not(feature = "std"),
 		),
@@ -56,7 +56,7 @@ pub trait SystemTimeExt {
 	/// internally, which would panic.
 	#[cfg_attr(
 		all(
-			target_family = "wasm",
+			target_arch = "wasm32",
 			any(target_os = "unknown", target_os = "none"),
 			not(feature = "std"),
 		),

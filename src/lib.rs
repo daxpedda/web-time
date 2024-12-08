@@ -48,10 +48,10 @@
 //!
 //! You can simply import the types you need:
 //! ```
-//! # #![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std, no_main)]
+//! # #![cfg_attr(all(target_arch = "wasm32", not(feature = "std")), no_std, no_main)]
 //! #
 //! use web_time::{Instant, SystemTime};
-//! # #[cfg(target_family = "wasm")]
+//! # #[cfg(target_arch = "wasm32")]
 //! # use tests_web as _;
 //! #
 //! # wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
@@ -145,19 +145,19 @@
 //! [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
 //! [`Performance` object]: https://developer.mozilla.org/en-US/docs/Web/API/performance_property
 #![cfg_attr(
-	any(not(feature = "serde"), not(target_family = "wasm")),
+	any(not(feature = "serde"), not(target_arch = "wasm32")),
 	doc = "[`serde::Deserialize`]: https://docs.rs/serde/1/serde/trait.Deserialize.html",
 	doc = "[`serde::Serialize`]: https://docs.rs/serde/1/serde/trait.Serialize.html"
 )]
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 
-#![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
-#![cfg_attr(all(test, target_family = "wasm"), no_main)]
+#![cfg_attr(all(target_arch = "wasm32", not(feature = "std")), no_std)]
+#![cfg_attr(all(test, target_arch = "wasm32"), no_main)]
 #![cfg_attr(all(doc, docsrs), feature(doc_cfg))]
 #![cfg_attr(wasm_bindgen_unstable_test_coverage, feature(coverage_attribute))]
 #![cfg_attr(
 	all(
-		target_family = "wasm",
+		target_arch = "wasm32",
 		any(target_os = "unknown", target_os = "none"),
 		target_feature = "atomics",
 		not(feature = "std"),
@@ -165,11 +165,11 @@
 	feature(thread_local)
 )]
 
-#[cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))]
+#[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 mod time;
 #[cfg(any(
 	all(
-		target_family = "wasm",
+		target_arch = "wasm32",
 		any(target_os = "unknown", target_os = "none"),
 		feature = "std"
 	),
@@ -178,20 +178,20 @@ mod time;
 #[cfg_attr(all(doc, docsrs), doc(cfg(all(Web, feature = "std"))))]
 pub mod web;
 
-#[cfg(not(all(target_family = "wasm", any(target_os = "unknown", target_os = "none"))))]
+#[cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))]
 pub use std::time::*;
 
-#[cfg(all(test, target_family = "wasm"))]
+#[cfg(all(test, target_arch = "wasm32"))]
 use tests_web as _;
 
-#[cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))]
+#[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 pub use self::time::*;
 
 #[cfg(all(not(doc), docsrs))]
 compile_error!("`--cfg docsrs` must only be used via `RUSTDOCFLAGS`, not `RUSTFLAGS`");
 
-#[cfg(all(test, target_family = "wasm"))]
+#[cfg(all(test, target_arch = "wasm32"))]
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
-#[cfg(all(test, not(target_family = "wasm")))]
+#[cfg(all(test, not(target_arch = "wasm32")))]
 fn main() {}
