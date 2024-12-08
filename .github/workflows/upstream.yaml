@@ -1,0 +1,57 @@
+name: Upstream check
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+  schedule:
+    - cron: "0 7 * * *"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Check upstream for changes
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Test
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const upstreamSources = require('./.github/upstream-sources.json')
+            for (const source of upstreamSources) {
+              Promise.all([
+                github.rest.repos.getContent({
+                  owner: source.owner,
+                  repo: source.repo,
+                  path: source.path,
+                  ref: source.tag,
+                }),
+                github.rest.repos
+                  .getLatestRelease({
+                    owner: source.owner,
+                    repo: source.repo,
+                  })
+                  .then((tags) => {
+                    return github.rest.repos.getContent({
+                      owner: source.owner,
+                      repo: source.repo,
+                      path: source.path,
+                      ref: tags.data.tag_name,
+                    })
+                  }),
+              ]).then(([current, latest]) => {
+                if (current.data.sha != latest.data.sha) {
+                  core.setFailed(`
+                    <${current.data.html_url}> has been updated to <${latest.data.html_url}>.
+                    Check if the relevant code needs to be updated and then update the entry in \`.github/upstream-sources.json\`.
+                  `)
+                }
+              })
+            }

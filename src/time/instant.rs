@@ -282,19 +282,27 @@ mod test {
 	struct ControlDuration(Duration);
 
 	impl ControlDuration {
-		/// Implements conversion from `DOMHighResTimeStamp` to [`Duration`] by
-		/// using [`Duration::checked_div()`].
+		/// Implements perfect but expensive conversion from
+		/// `DOMHighResTimeStamp` to [`Duration`].
 		fn new(time_stamp: f64) -> Self {
-			// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#657-668>.
+			// Inspired by <https://github.com/rust-lang/rust/blob/1.83.0/library/core/src/time.rs#L822-L833>.
+			/// Number of nanoseconds in a second.
+			const NANOS_PER_SEC: u64 = 1_000_000_000;
+			let rhs: u32 = 1000;
 			let time_stamp = Duration::from_secs_f64(time_stamp);
-			let secs = time_stamp.as_secs() / 1000;
-			let carry = time_stamp.as_secs() - secs * 1000;
-			#[allow(clippy::as_conversions, clippy::cast_possible_truncation)]
-			let extra_nanos = (carry * 1_000_000_000 / 1000) as u32;
+			let (secs, extra_secs) = (
+				time_stamp.as_secs() / u64::from(rhs),
+				time_stamp.as_secs() % u64::from(rhs),
+			);
+			let (mut nanos, extra_nanos) = (
+				time_stamp.subsec_nanos() / rhs,
+				time_stamp.subsec_nanos() % rhs,
+			);
+			// CHANGED: Extracted part of the calculation into variable.
+			let extra = extra_secs * NANOS_PER_SEC + u64::from(extra_nanos);
+			nanos += u32::try_from(extra / u64::from(rhs)).unwrap();
 			// CHANGED: Added rounding.
-			let nanos = time_stamp.subsec_micros()
-				+ u32::from(time_stamp.subsec_nanos() % 1000 > 499)
-				+ extra_nanos;
+			nanos += u32::from(extra % u64::from(rhs) >= u64::from(rhs / 2));
 			// CHANGED: Removed check that would fail because of the additional time added
 			// by rounding.
 			Self(Duration::new(secs, nanos))

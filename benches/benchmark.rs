@@ -103,14 +103,26 @@ pub fn main() {
 		Duration::from_secs_f64(time_stamp) / 1000
 	});
 	benchmark("`Duration::from_secs_f64()` with rounding", |time_stamp| {
-		// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#657-668>.
+		// Inspired by <https://github.com/rust-lang/rust/blob/1.83.0/library/core/src/time.rs#L822-L833>.
+		/// Number of nanoseconds in a second.
+		const NANOS_PER_SEC: u64 = 1_000_000_000;
+		let rhs: u32 = 1000;
 		let time_stamp = Duration::from_secs_f64(time_stamp);
-		let secs = time_stamp.as_secs() / 1000;
-		let carry = time_stamp.as_secs() - secs * 1000;
-		let extra_nanos = (carry * 1_000_000_000 / 1000) as u32;
-		let nanos = time_stamp.subsec_micros()
-			+ u32::from(time_stamp.subsec_nanos() % 1000 > 499)
-			+ extra_nanos;
+		let (secs, extra_secs) = (
+			time_stamp.as_secs() / u64::from(rhs),
+			time_stamp.as_secs() % u64::from(rhs),
+		);
+		let (mut nanos, extra_nanos) = (
+			time_stamp.subsec_nanos() / rhs,
+			time_stamp.subsec_nanos() % rhs,
+		);
+		// CHANGED: Extracted part of the calculation into variable.
+		let extra = extra_secs * NANOS_PER_SEC + u64::from(extra_nanos);
+		nanos += u32::try_from(extra / u64::from(rhs)).unwrap();
+		// CHANGED: Added rounding.
+		nanos += u32::from(extra % u64::from(rhs) >= u64::from(rhs / 2));
+		// CHANGED: Removed check that would fail because of the additional time added
+		// by rounding.
 		Duration::new(secs, nanos)
 	});
 }
@@ -186,19 +198,17 @@ impl F64 {
 }
 
 /// Adjusted [`Duration::from_secs_f64()`].
-///
-/// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1262-1340>.
 #[expect(warnings, reason = "code is copied")]
 fn adjusted_std(time_stamp: f64) -> Duration {
 	// CHANGED: 1G to 1M.
 	const NANOS_PER_MILLI: u32 = 1_000_000;
 
-	// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1477-1484>.
+	// See <https://github.com/rust-lang/rust/blob/1.83.0/library/core/src/time.rs#L1694-L1703>.
 	const MANT_BITS: i16 = 52;
 	const EXP_BITS: i16 = 11;
 	const OFFSET: i16 = 44;
 
-	// See <https://doc.rust-lang.org/1.73.0/src/core/time.rs.html#1262-1340>.
+	// See <https://github.com/rust-lang/rust/blob/1.83.0/library/core/src/time.rs#L1480-L1558>.
 	const MIN_EXP: i16 = 1 - (1_i16 << EXP_BITS) / 2;
 	const MANT_MASK: u64 = (1 << MANT_BITS) - 1;
 	const EXP_MASK: u64 = (1 << 1_i16 << EXP_BITS) - 1;
@@ -277,13 +287,17 @@ fn adjusted_std(time_stamp: f64) -> Duration {
 		panic!("can not convert float seconds to Duration: value is either too big or NaN")
 	};
 
-	let secs = millis / 1000;
-	let carry = millis - secs * 1000;
-	let extra_nanos = carry * u64::from(NANOS_PER_MILLI);
-	nanos += extra_nanos as u32;
+	// Inspired by <https://github.com/rust-lang/rust/blob/1.83.0/library/core/src/time.rs#L822-L833>.
+	/// Number of nanoseconds in a second.
+	const NANOS_PER_SEC: u64 = 1_000_000_000;
+	let rhs: u32 = 1000;
+
+	let (secs, extra_secs) = (millis / u64::from(rhs), millis % u64::from(rhs));
+	// CHANGED: Nanos were already calculated during the conversion.
+	nanos += u32::try_from((extra_secs * NANOS_PER_SEC) / u64::from(rhs)).unwrap();
 
 	debug_assert!(
-		nanos < 1_000_000_000,
+		u64::from(nanos) < NANOS_PER_SEC,
 		"impossible amount of nanoseconds found"
 	);
 

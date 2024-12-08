@@ -2,9 +2,9 @@
 //! compatible with Serde's implementation for [`std::time::SystemTime`].
 //!
 //! This implementation was copied from Serde's
-//! [`Deserialize`](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/de/impls.rs#L2168-L2314),
+//! [`Deserialize`](https://github.com/serde-rs/serde/blob/v1.0.215/serde/src/de/impls.rs#L2282-L2426),
 //! and
-//! [`Serialize`](https://github.com/serde-rs/serde/blob/5fa711d75d91173aafc6019e03cf8af6ac9ba7b2/serde/src/ser/impls.rs#L730-L747)
+//! [`Serialize`](https://github.com/serde-rs/serde/blob/v1.0.215/serde/src/ser/impls.rs#L753-L768)
 //! implementation.
 
 #![allow(warnings)]
