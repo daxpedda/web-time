@@ -53,9 +53,8 @@ web-time = { path = "../", default-features = false }
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
 web-sys = { version = "0.3", default-features = false, features = [
-	"DedicatedWorkerGlobalScope",
+	"console",
 	"OfflineAudioContext",
-	"WorkerGlobalScope",
 ] }
 web-thread = { git = "https://github.com/daxpedda/wasm-worker", rev = "93236ab92354cbe0a0c07e71b9888be8b3e45999", optional = true, features = [
 	"audio-worklet",

@@ -13,7 +13,7 @@ use alloc::string::ToString;
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::{Duration, SystemTime};
 
-use self::util::{sleep, DIFF, MAX_DIFF};
+use self::util::{sleep, DIFF, MAX_DIFF, WAIT};
 
 /// [`SystemTime::UNIX_EPOCH`].
 #[allow(
@@ -31,7 +31,7 @@ fn unix_epoch() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn duration_since_success() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let duration = SystemTime::now().duration_since(time).unwrap();
 	assert!(duration >= DIFF);
 	assert!(duration <= MAX_DIFF);
@@ -41,7 +41,7 @@ async fn duration_since_success() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn duration_since_failure() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let error = time.duration_since(SystemTime::now()).unwrap_err();
 	let duration = error.duration();
 	assert!(duration >= DIFF);
@@ -52,7 +52,7 @@ async fn duration_since_failure() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn elapsed_success() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let duration = time.elapsed().unwrap();
 	assert!(duration >= DIFF);
 	assert!(duration <= MAX_DIFF);
@@ -61,16 +61,16 @@ async fn elapsed_success() {
 /// [`SystemTime::elapsed()`] failure.
 #[wasm_bindgen_test(unsupported = test)]
 fn elapsed_failure() {
-	let time = SystemTime::now() + DIFF;
+	let time = SystemTime::now() + WAIT;
 	let error = time.elapsed().unwrap_err();
-	assert!(error.duration() <= DIFF);
+	assert!(error.duration() <= WAIT);
 }
 
 /// [`SystemTime::checked_add()`] success.
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn checked_add_success() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let now = SystemTime::now();
 	assert!(time.checked_add(DIFF).unwrap() <= now);
 	assert!(time.checked_add(MAX_DIFF).unwrap() >= now);
@@ -79,7 +79,7 @@ async fn checked_add_success() {
 /// [`SystemTime::checked_add()`] failure.
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn checked_add_failure() {
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	assert_eq!(SystemTime::now().checked_add(Duration::MAX), None);
 }
 
@@ -87,7 +87,7 @@ async fn checked_add_failure() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn checked_sub_success() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let now = SystemTime::now();
 	assert!(now.checked_sub(DIFF).unwrap() >= time);
 	assert!(now.checked_sub(MAX_DIFF).unwrap_or(SystemTime::UNIX_EPOCH) <= time);
@@ -103,7 +103,7 @@ fn checked_sub_failure() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn add_success() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	assert!(time + DIFF <= SystemTime::now());
 	assert!(time + MAX_DIFF >= SystemTime::now());
 }
@@ -113,7 +113,7 @@ async fn add_success() {
 async fn add_assign_success() {
 	let mut time_1 = SystemTime::now();
 	let mut time_2 = time_1;
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let now = SystemTime::now();
 	time_1 += DIFF;
 	assert!(time_1 <= now);
@@ -125,7 +125,7 @@ async fn add_assign_success() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn sub_success() {
 	let time = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let now = SystemTime::now();
 	assert!(now - DIFF >= time);
 	assert!(now.duration_since(time).unwrap() <= MAX_DIFF);
@@ -135,7 +135,7 @@ async fn sub_success() {
 #[wasm_bindgen_test(unsupported = pollster::test)]
 async fn sub_assign_success() {
 	let earlier = SystemTime::now();
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let mut later = SystemTime::now();
 	later -= DIFF;
 	assert!(later >= earlier);

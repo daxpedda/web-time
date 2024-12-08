@@ -195,7 +195,7 @@ test () {
 
     # Run tests.
     mkdir -p coverage-input/$path
-    CHROMEDRIVER=chromedriver WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-input/$path) $command ${@:3}
+    WASM_BINDGEN_USE_BROWSER=1 CHROMEDRIVER=chromedriver WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-input/$path) $command ${@:3}
 
     local crate_name=web_time
     local IFS=$'\n'

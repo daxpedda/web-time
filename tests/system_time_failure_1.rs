@@ -10,13 +10,13 @@ mod util;
 use wasm_bindgen_test::wasm_bindgen_test;
 use web_time::{Duration, SystemTime};
 
-use self::util::{sleep, DIFF};
+use self::util::{sleep, WAIT};
 
 /// [`SystemTime::add()`] failure.
 #[wasm_bindgen_test(unsupported = pollster::test)]
 #[should_panic = "overflow when adding duration to instant"]
 async fn add_failure() {
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 	let _ = SystemTime::now() + Duration::MAX;
 }
 

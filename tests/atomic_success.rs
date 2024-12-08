@@ -7,13 +7,19 @@ mod util;
 
 use futures_channel::oneshot;
 use wasm_bindgen_test::wasm_bindgen_test;
-use web_thread::web;
+use web_sys::console;
+use web_thread::web::{self, has_spawn_support};
 use web_time::{Duration, Instant};
 
-use self::util::{sleep, Flag, DIFF};
+use self::util::{sleep, Flag, DIFF, WAIT};
 
 #[wasm_bindgen_test]
 async fn basic() {
+	if !has_spawn_support() {
+		console::error_1(&"can't spawn threads".into());
+		return;
+	}
+
 	let earlier = Instant::now();
 
 	let flag = Flag::new();
@@ -24,7 +30,7 @@ async fn basic() {
 			let later = Instant::now();
 			assert!(earlier <= later, "{:?}", earlier - later);
 
-			sleep(DIFF).await;
+			sleep(WAIT).await;
 
 			let later = Instant::now();
 			assert!((later - earlier) >= DIFF, "{:?}", later - earlier);
@@ -41,6 +47,11 @@ async fn basic() {
 
 #[wasm_bindgen_test]
 async fn delay() {
+	if !has_spawn_support() {
+		console::error_1(&"can't spawn threads".into());
+		return;
+	}
+
 	sleep(Duration::from_secs(2)).await;
 
 	let earlier = Instant::now();
@@ -53,7 +64,7 @@ async fn delay() {
 			let later = Instant::now();
 			assert!(earlier <= later, "{:?}", earlier - later);
 
-			sleep(DIFF).await;
+			sleep(WAIT).await;
 
 			let later = Instant::now();
 			assert!((later - earlier) >= DIFF, "{:?}", later - earlier);
@@ -70,6 +81,11 @@ async fn delay() {
 
 #[wasm_bindgen_test]
 async fn worker() {
+	if !has_spawn_support() {
+		console::error_1(&"can't spawn threads".into());
+		return;
+	}
+
 	let (sender, receiver) = oneshot::channel();
 	web::spawn_async(move || async move { sender.send(Instant::now()).unwrap() });
 
@@ -77,7 +93,7 @@ async fn worker() {
 	let later = Instant::now();
 	assert!(earlier <= later, "{:?}", earlier - later);
 
-	sleep(DIFF).await;
+	sleep(WAIT).await;
 
 	let later = Instant::now();
 	assert!((later - earlier) >= DIFF, "{:?}", later - earlier);
