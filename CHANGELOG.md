@@ -9,9 +9,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Add [`no_std`] support through a `std` crate feature.
-- Add support for the [`wasm32v1-none`] target.
-- Add MSRV policy.
+- [`no_std`] support through a `std` crate feature.
+- Support for the [`wasm32v1-none`] target.
+- MSRV policy.
 
 ### Fixed
 
@@ -25,7 +25,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Add Serde de/serialization support for `SystemTime` through a `serde` crate feature.
+- Serde de/serialization support for `SystemTime` through a `serde` crate feature.
 
 ## [1.0.0] - 2024-01-14
 
@@ -37,8 +37,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Added `web` module containing a platform-specific extension trait to `SystemTime`, allowing
-  conversion from and to `std::time::SystemTime`.
+- `web` module containing a platform-specific extension trait to `SystemTime`, allowing conversion
+  from and to `std::time::SystemTime`.
 
 ### Changed
 
@@ -78,7 +78,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Initial commit.
+- Initial release.
 
 [Unreleased]: https://github.com/daxpedda/web-time/compare/v1.1.0...HEAD
 [1.1.0]: https://github.com/daxpedda/web-time/compare/v1.0.0...v1.1.0
