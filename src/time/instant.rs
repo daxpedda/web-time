@@ -8,9 +8,9 @@
 use core::ops::{Add, AddAssign, Sub, SubAssign};
 use core::time::Duration;
 
+use super::js::PERFORMANCE;
 #[cfg(target_feature = "atomics")]
-use super::js::Origin;
-use super::js::Performance;
+use super::js::TIME_ORIGIN;
 
 /// See [`std::time::Instant`].
 #[cfg_attr(
@@ -37,10 +37,16 @@ impl Instant {
 	)]
 	#[must_use]
 	pub fn now() -> Self {
-		#[cfg(not(target_feature = "atomics"))]
-		let now = Performance::now();
-		#[cfg(target_feature = "atomics")]
-		let now = Performance::now() + Origin::get();
+		let now = PERFORMANCE.with(|performance| {
+			let performance = performance
+				.as_ref()
+				.expect("`Performance` object not found");
+
+			#[cfg(not(target_feature = "atomics"))]
+			return performance.now();
+			#[cfg(target_feature = "atomics")]
+			TIME_ORIGIN.with(|origin| performance.now() + origin)
+		});
 
 		Self(time_stamp_to_duration(now))
 	}

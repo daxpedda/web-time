@@ -22,7 +22,6 @@ serde = ["dep:serde"]
 std = [
 	"wasm-bindgen/std",
 	"js-sys/std",
-	"once_cell/std",
 	"serde?/std",
 	"wasm-bindgen-test/std",
 	"getrandom/std",
@@ -32,10 +31,9 @@ std = [
 ]
 
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies]
-js-sys = { version = "0.3.73", default-features = false }
-once_cell = { version = "1.12.0", default-features = false }
+js-sys = { version = "0.3.75", default-features = false }
 serde = { version = "1.0.0", optional = true, default-features = false }
-wasm-bindgen = { version = "0.2.96", default-features = false }
+wasm-bindgen = { version = "0.2.98", default-features = false }
 
 [dev-dependencies]
 wasm-bindgen-test = { version = "0.3", default-features = false }
