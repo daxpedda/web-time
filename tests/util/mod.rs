@@ -24,8 +24,6 @@ pub(crate) use self::std::*;
 )]
 pub(crate) use self::web::*;
 
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
 /// Difference to measure that time has passed.
 pub(crate) const DIFF: Duration = Duration::from_millis(50);
 /// Maximum difference that can't have been passed by [`DIFF`].
