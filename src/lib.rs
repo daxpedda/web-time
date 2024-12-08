@@ -153,7 +153,7 @@
 
 #![cfg_attr(all(target_family = "wasm", not(feature = "std")), no_std)]
 #![cfg_attr(all(test, target_family = "wasm"), no_main)]
-#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(all(doc, docsrs), feature(doc_cfg))]
 #![cfg_attr(wasm_bindgen_unstable_test_coverage, feature(coverage_attribute))]
 #![cfg_attr(
 	all(
@@ -173,9 +173,9 @@ mod time;
 		any(target_os = "unknown", target_os = "none"),
 		feature = "std"
 	),
-	docsrs
+	all(doc, docsrs)
 ))]
-#[cfg_attr(docsrs, doc(cfg(all(Web, feature = "std"))))]
+#[cfg_attr(all(doc, docsrs), doc(cfg(all(Web, feature = "std"))))]
 pub mod web;
 
 #[cfg(not(all(target_family = "wasm", any(target_os = "unknown", target_os = "none"))))]
@@ -186,6 +186,9 @@ use tests_web as _;
 
 #[cfg(all(target_family = "wasm", any(target_os = "unknown", target_os = "none")))]
 pub use self::time::*;
+
+#[cfg(all(not(doc), docsrs))]
+compile_error!("`--cfg docsrs` must only be used via `RUSTDOCFLAGS`, not `RUSTFLAGS`");
 
 #[cfg(all(test, target_family = "wasm"))]
 wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);

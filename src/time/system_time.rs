@@ -6,7 +6,7 @@
 	doc = "[`std::time::SystemTime`]: https://doc.rust-lang.org/std/time/struct.SystemTime.html"
 )]
 
-#[cfg(all(doc, not(feature = "std")))]
+#[cfg(all(all(doc, docsrs), not(feature = "std")))]
 use core::error::Error;
 use core::fmt::{self, Display, Formatter};
 use core::ops::{Add, AddAssign, Sub, SubAssign};
@@ -162,6 +162,6 @@ impl Display for SystemTimeError {
 	}
 }
 
-#[cfg(any(feature = "std", docsrs))]
-#[cfg_attr(docsrs, doc(cfg(feature = "std")))]
+#[cfg(any(feature = "std", all(doc, docsrs)))]
+#[cfg_attr(all(doc, docsrs), doc(cfg(feature = "std")))]
 impl Error for SystemTimeError {}

@@ -204,3 +204,57 @@ jobs:
           cargo update -p syn --precise 2.0.67
       - name: Build
         run: cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }}
+
+  docsrs-error:
+    name: |
+      `cfg(docsrs)` error message ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{ matrix.features.description }}
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { target: x86_64-unknown-linux-gnu, description: Native }
+          - { target: wasm32-unknown-unknown, description: Web }
+          - { target: wasm32v1-none, description: Wasm v1 }
+        rust:
+          - { version: "1.60", description: MSRV }
+          - { version: stable }
+          - { version: nightly }
+        # We don't check `serde` because it fails on the dependency itself already.
+        features:
+          - { features: "", no_std: false }
+          - { features: --no-default-features, no_std: true, description: (`no_std`) }
+        exclude:
+          - target: { target: x86_64-unknown-linux-gnu, description: Native }
+            rust: { version: nightly }
+          - target: { target: wasm32-unknown-unknown, description: Web }
+            rust: { version: nightly }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            rust: { version: "1.60" }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            rust: { version: stable }
+          - target: { target: wasm32v1-none, description: Wasm v1 }
+            features: { no_std: false }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Rust
+        run: |
+          rustup toolchain install ${{ matrix.rust.version }} --profile minimal --target ${{ matrix.target.target }}
+          rustup default ${{ matrix.rust.version }}
+      - name: Fix MSRV dependencies
+        if: matrix.rust.version == '1.60'
+        run: |
+          cargo update -p bumpalo --precise 3.14.0
+          cargo update -p serde --precise 1.0.210
+          cargo update -p syn --precise 2.0.67
+      - name: Build
+        env:
+          RUSTFLAGS: --cfg docsrs
+        run:
+          diff <(cargo build --target ${{ matrix.target.target }} ${{ matrix.features.features }}
+          --message-format json | jq -r "select(.reason == \"compiler-message\") |
+          .message.message") .github/docsrs-error-${{ matrix.rust.version }}.txt

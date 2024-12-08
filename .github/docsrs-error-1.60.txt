@@ -1,0 +1,2 @@
+`--cfg docsrs` must only be used via `RUSTDOCFLAGS`, not `RUSTFLAGS`
+aborting due to previous error
