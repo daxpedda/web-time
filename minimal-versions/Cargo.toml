@@ -8,7 +8,7 @@ rust-version = "1.60"
 version = "0.0.0"
 
 [features]
-default = ["std"]
+default = ["web-time/default"]
 serde = ["web-time/serde"]
 std = ["web-time/std"]
 
