@@ -13,4 +13,4 @@ serde = ["web-time/serde"]
 std = ["web-time/std"]
 
 [dependencies]
-web-time = { path = "..", default-features = false }
+web-time = { path = "../..", default-features = false }
