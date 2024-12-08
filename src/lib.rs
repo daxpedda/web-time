@@ -54,8 +54,6 @@
 //! # #[cfg(target_arch = "wasm32")]
 //! # use tests_web as _;
 //! #
-//! # wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-//! #
 //! # #[wasm_bindgen_test::wasm_bindgen_test]
 //! # fn main() {
 //! let now = Instant::now();
@@ -189,9 +187,6 @@ pub use self::time::*;
 
 #[cfg(all(not(doc), docsrs))]
 compile_error!("`--cfg docsrs` must only be used via `RUSTDOCFLAGS`, not `RUSTFLAGS`");
-
-#[cfg(all(test, target_arch = "wasm32"))]
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
 
 #[cfg(all(test, not(target_arch = "wasm32")))]
 fn main() {}

@@ -17,7 +17,7 @@ jobs:
   coverage:
     name: Test Coverage ${{ matrix.mt.description }} ${{ matrix.features.description }}
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     timeout-minutes: 10
 
@@ -67,6 +67,7 @@ jobs:
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Test
         env:
+          #WASM_BINDGEN_USE_BROWSER: 1
           CHROMEDRIVER: chromedriver
         run: |
           mkdir coverage-output
