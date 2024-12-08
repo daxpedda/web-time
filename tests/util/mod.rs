@@ -24,13 +24,14 @@ pub(crate) use self::std::*;
 )]
 pub(crate) use self::web::*;
 
-wasm_bindgen_test::wasm_bindgen_test_configure!(run_in_browser);
-
+/// Time to wait.
+pub(crate) const WAIT: Duration = Duration::from_millis(50);
 /// Difference to measure that time has passed.
-pub(crate) const DIFF: Duration = Duration::from_millis(50);
+#[allow(clippy::allow_attributes, dead_code, reason = "not used by all tests")]
+pub(crate) const DIFF: Duration = Duration::from_millis(49);
 /// Maximum difference that can't have been passed by [`DIFF`].
 #[allow(clippy::allow_attributes, dead_code, reason = "not used by all tests")]
-pub(crate) const MAX_DIFF: Duration = if let Some(duration) = DIFF.checked_mul(10) {
+pub(crate) const MAX_DIFF: Duration = if let Some(duration) = WAIT.checked_mul(10) {
 	duration
 } else {
 	panic!()

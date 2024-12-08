@@ -67,6 +67,7 @@ jobs:
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Test
         env:
+          WASM_BINDGEN_USE_BROWSER: 1
           CHROMEDRIVER: chromedriver
         run: |
           mkdir coverage-output

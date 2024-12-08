@@ -15,10 +15,10 @@ env:
 jobs:
   test:
     name:
-      Test ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
-      matrix.features.description }}
+      Test ${{ matrix.driver.description }} ${{ matrix.environment.description }} ${{
+      matrix.rust.description }} ${{ matrix.features.description }}
 
-    runs-on: ${{ matrix.target.os }}
+    runs-on: ${{ matrix.driver.os }}
 
     timeout-minutes: 10
 
@@ -26,49 +26,84 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - {
-              os: ubuntu-latest,
-              target: wasm32-unknown-unknown,
-              description: Chrome,
-              name: CHROMEDRIVER,
-              value: chromedriver,
-            }
-          - {
-              os: ubuntu-latest,
-              target: wasm32-unknown-unknown,
-              description: Firefox,
-              name: GECKODRIVER,
-              value: geckodriver,
-            }
-          - {
-              os: macos-latest,
-              target: wasm32-unknown-unknown,
-              description: Safari,
-              name: SAFARIDRIVER,
-              value: safaridriver,
-            }
+          - { target: wasm32-unknown-unknown, docargs: -Zdoctest-xcompile }
         rust:
-          - { version: stable }
+          - { version: nightly }
           - {
               version: nightly,
               description: with Atomics,
               component: --component rust-src,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
               build-std: true,
+              atomics: true,
             }
         features:
           - { features: "", no_std: false }
           - { features: --no-default-features, no_std: true, description: "(`no_std`)" }
+        driver:
+          - {
+              os: ubuntu-latest,
+              description: Chrome,
+              name: CHROMEDRIVER,
+              value: chromedriver,
+              browser: true,
+            }
+          - {
+              os: ubuntu-latest,
+              description: Firefox,
+              name: GECKODRIVER,
+              value: geckodriver,
+              browser: true,
+              firefox: true,
+            }
+          - {
+              os: macos-latest,
+              description: Safari,
+              name: SAFARIDRIVER,
+              value: safaridriver,
+              browser: true,
+            }
+          - { os: ubuntu-24.04, description: Node.js, nodejs: true }
+        environment:
+          - { name: WASM_BINDGEN_USE_BROWSER, browser: true }
+          - {
+              description: Dedicated Worker,
+              name: WASM_BINDGEN_USE_DEDICATED_WORKER,
+              browser: true,
+            }
+          - {
+              description: Shared Worker,
+              name: WASM_BINDGEN_USE_SHARED_WORKER,
+              browser: true,
+              shared-worker: true,
+            }
+          - {
+              description: Service Worker,
+              name: WASM_BINDGEN_USE_SERVICE_WORKER,
+              browser: true,
+              service-worker: true,
+            }
+          - { browser: false }
         include:
-          - target:
-              {
-                os: ubuntu-latest,
-                target: x86_64-unknown-linux-gnu,
-                description: Native,
-                native: true,
-              }
+          - target: { target: x86_64-unknown-linux-gnu }
             rust: { version: stable }
             features: { features: "", no_std: false }
+            driver: { os: ubuntu-latest, description: Native, native: true }
+        exclude:
+          - driver: { browser: true }
+            environment: { browser: false }
+          - driver: { nodejs: true }
+            environment: { browser: true }
+          # Firefox doesn't support `Atomics.waitAsync()` and the polyfill requires spawning workers.
+          - driver: { firefox: true }
+            rust: { atomics: true }
+            environment: { shared-worker: true }
+          # Firefox doesn't support module service workers.
+          - driver: { firefox: true }
+            environment: { service-worker: true }
+          # `wasm-bindgen` support of Node.js with atomics is incomplete.
+          - driver: { nodejs: true }
+            rust: { atomics: true }
 
     steps:
       - name: Checkout
@@ -88,99 +123,15 @@ jobs:
         if: matrix.rust.build-std == true && matrix.features.no_std == true
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Set Driver
-        if: matrix.target.native == false
-        run: echo "${{ matrix.target.name }}=${{ matrix.target.value }}" >> $GITHUB_ENV
+        if: matrix.driver.browser == true
+        run: echo "${{ matrix.driver.name }}=${{ matrix.driver.value }}" >> $GITHUB_ENV
+      - name: Set Environment
+        if: matrix.environment.browser == true
+        run: echo "${{ matrix.environment.name }}=1" >> $GITHUB_ENV
       - name: Test
-        env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
-        run:
-          cargo test --features serde ${{ matrix.features.features }} --target ${{
-          matrix.target.target }} $BUILD_STD_COMPONENTS --workspace
-
-  doctest:
-    name:
-      Doctest ${{ matrix.target.description }} ${{ matrix.rust.description }} ${{
-      matrix.features.description }}
-
-    runs-on: ${{ matrix.target.os }}
-
-    timeout-minutes: 10
-
-    strategy:
-      fail-fast: false
-      matrix:
-        target:
-          - {
-              os: ubuntu-latest,
-              target: wasm32-unknown-unknown,
-              description: Chrome,
-              name: CHROMEDRIVER,
-              value: chromedriver,
-            }
-          - {
-              os: ubuntu-latest,
-              target: wasm32-unknown-unknown,
-              description: Firefox,
-              name: GECKODRIVER,
-              value: geckodriver,
-            }
-          - {
-              os: macos-latest,
-              target: wasm32-unknown-unknown,
-              description: Safari,
-              name: SAFARIDRIVER,
-              value: safaridriver,
-            }
-        rust:
-          - { version: nightly }
-          - {
-              version: nightly,
-              description: with Atomics,
-              component: --component rust-src,
-              flags: "-Ctarget-feature=+atomics,+bulk-memory",
-              build-std: true,
-            }
-        features:
-          - { features: "", no_std: false }
-          - { features: --no-default-features, no_std: true, description: "(`no_std`)" }
-        include:
-          - target:
-              {
-                os: ubuntu-latest,
-                target: x86_64-unknown-linux-gnu,
-                description: Native,
-                native: true,
-              }
-            rust: { version: stable }
-            features: { features: "", no_std: false }
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Install `wasm-bindgen-cli`
-        uses: taiki-e/install-action@v2
-        with:
-          tool: wasm-bindgen-cli
-      - name: Install Rust
-        run: |
-          rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
-          rustup default ${{ matrix.rust.version }}
-      - name: Set `build-std` components
-        if: matrix.rust.build-std == true && matrix.features.no_std == false
-        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=panic_abort,std" >> $GITHUB_ENV
-      - name: Set `build-std` `no_std` components
-        if: matrix.rust.build-std == true && matrix.features.no_std == true
-        run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
-      - name: Set Driver and enable cross-compilation
-        if: matrix.target.native == false
-        run: |
-          echo "${{ matrix.target.name }}=${{ matrix.target.value }}" >> $GITHUB_ENV
-          echo "DOCTEST_XCOMPILE_ARG=-Zdoctest-xcompile" >> $GITHUB_ENV
-      - name: Doctest
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
         run:
           cargo test --features serde ${{ matrix.features.features }} --target ${{
-          matrix.target.target }} $BUILD_STD_COMPONENTS --workspace --doc ${{ matrix.target.args }}
-          $DOCTEST_XCOMPILE_ARG
+          matrix.target.target }} $BUILD_STD_COMPONENTS --workspace ${{ matrix.target.docargs }}
