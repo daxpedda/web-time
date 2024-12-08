@@ -2,10 +2,6 @@
 
 #![cfg_attr(all(target_arch = "wasm32", not(feature = "std")), no_std)]
 #![cfg_attr(all(test, target_arch = "wasm32"), no_main)]
-#![cfg_attr(
-	all(target_arch = "wasm32", target_feature = "atomics"),
-	feature(thread_local)
-)]
 
 #[cfg(all(target_arch = "wasm32", not(feature = "std")))]
 use wasm_bindgen_test as _;
@@ -99,63 +95,6 @@ mod allocator {
 	impl Drop for DropLock {
 		fn drop(&mut self) {
 			LOCKED.swap(false, Ordering::Release);
-		}
-	}
-}
-
-#[cfg(all(target_arch = "wasm32", target_feature = "atomics"))]
-#[expect(
-	unsafe_code,
-	reason = "no way to implement `critical_section` without unsafe"
-)]
-#[expect(
-	clippy::no_mangle_with_rust_abi,
-	reason = "from `critical_section::set_impl!` macro"
-)]
-mod critical_section {
-	//! Implementing [`critical_section`].
-
-	use core::cell::Cell;
-	use core::sync::atomic::{AtomicBool, Ordering};
-
-	use critical_section::Impl;
-
-	/// The lock flag.
-	static LOCKED: AtomicBool = AtomicBool::new(false);
-	/// The thread local lock flag.
-	#[thread_local]
-	static LOCAL_LOCKED: Cell<bool> = Cell::new(false);
-
-	critical_section::set_impl!(CriticalSection);
-
-	/// Implementing [`critical_section::Impl`].
-	struct CriticalSection;
-
-	// SAFETY: the lock is safely implemented.
-	unsafe impl Impl for CriticalSection {
-		#[inline]
-		unsafe fn acquire() -> bool {
-			if LOCAL_LOCKED.get() {
-				return true;
-			}
-
-			LOCAL_LOCKED.set(true);
-
-			while LOCKED
-				.compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
-				.is_err()
-			{}
-
-			false
-		}
-
-		#[inline]
-		unsafe fn release(restore_state: bool) {
-			if !restore_state {
-				LOCKED.store(false, Ordering::Release);
-
-				LOCAL_LOCKED.set(false);
-			}
 		}
 	}
 }

@@ -19,7 +19,6 @@ std = [
 	"serde-json-core?/std",
 	"getrandom/std",
 	"rand/std",
-	"once_cell/std",
 	"futures-util/std",
 	"futures-channel/std",
 	"web-thread",
@@ -51,10 +50,8 @@ web-sys = { version = "0.3", default-features = false, features = [
 web-time = { path = "../", default-features = false }
 
 [target.'cfg(all(target_arch = "wasm32", target_feature = "atomics"))'.dependencies]
-critical-section = { version = "1", features = ["restore-state-bool"] }
 futures-channel = { version = "0.3", default-features = false, features = ["alloc"] }
 futures-util = { version = "0.3", default-features = false }
-once_cell = { version = "1", default-features = false, features = ["critical-section"] }
 web-sys = { version = "0.3", default-features = false, features = [
 	"DedicatedWorkerGlobalScope",
 	"OfflineAudioContext",
