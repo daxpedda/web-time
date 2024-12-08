@@ -50,7 +50,12 @@ tests-web = { path = "tests-web", default-features = false, features = ["run"] }
 
 [patch.crates-io]
 getrandom = { git = "https://github.com/daxpedda/getrandom", branch = "web-time" }
+js-sys = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
 serde_test = { git = "https://github.com/daxpedda/test", branch = "no_std" }
+wasm-bindgen = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
+wasm-bindgen-futures = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
+wasm-bindgen-test = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
+web-sys = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
 
 [profile.test]
 opt-level = 1
