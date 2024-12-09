@@ -39,7 +39,12 @@ jobs:
             }
         features:
           - { features: "", no_std: false }
-          - { features: --no-default-features, no_std: true, description: "(`no_std`)" }
+          - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - {
+              features: --no-default-features --features msrv,
+              no_std: true,
+              description: "(`no_std`, `msrv`)",
+            }
         driver:
           - {
               os: ubuntu-latest,

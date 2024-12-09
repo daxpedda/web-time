@@ -82,10 +82,12 @@
 //! This offers compile-time detection and does not break compilation when
 //! enabled with the crates MSRV.
 //!
-//! When used in conjunction with the `std` crate feature and compiling with
-//! Rust v1.77 or above, it enables the use of the [`f64.nearest`] instruction.
-//! Which will significantly reduce the instruction
-//! count for [`Instant::now()`].
+//! - Rust v1.77 + `std`: Enables the use of the [`f64.nearest`] instruction.
+//!   Which will significantly reduce the instruction count for
+//!   [`Instant::now()`].
+//! - Rust Nightly: Enables the use of the [`f64.trunc`] and [`f64.nearest`]
+//!   instruction. Which will significantly reduce the instruction count for
+//!   [`Instant::now()`].
 //!
 //! ## `serde`
 //!
@@ -160,6 +162,7 @@
 )]
 //! [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
 //! [`f64.nearest`]: https://webassembly.github.io/spec/core/syntax/instructions.html#syntax-instr-numeric
+//! [`f64.trunc`]: https://webassembly.github.io/spec/core/syntax/instructions.html#syntax-instr-numeric
 
 #![cfg_attr(all(target_arch = "wasm32", not(feature = "std")), no_std)]
 #![cfg_attr(all(test, target_arch = "wasm32"), no_main)]
@@ -174,6 +177,7 @@
 	),
 	feature(thread_local)
 )]
+#![cfg_attr(all(not(feature = "std"), nightly), feature(asm_experimental_arch))]
 
 #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
 mod time;

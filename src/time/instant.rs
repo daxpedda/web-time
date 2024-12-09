@@ -198,7 +198,26 @@ impl F64 {
 		self.0.trunc()
 	}
 
-	#[cfg(not(feature = "std"))]
+	#[cfg(all(not(feature = "std"), nightly))]
+	fn trunc(self) -> f64 {
+		let output;
+		// SAFETY: No side effects.
+		#[allow(unsafe_code)]
+		unsafe {
+			core::arch::asm! {
+				"local.get {}",
+				"f64.trunc",
+				"local.set {}",
+				in(local) self.0,
+				lateout(local) output,
+				options(pure, nomem),
+			};
+		}
+
+		output
+	}
+
+	#[cfg(all(not(feature = "std"), not(nightly)))]
 	#[allow(warnings)]
 	fn trunc(self) -> f64 {
 		// See <https://github.com/rust-lang/libm/blob/libm-v0.2.11/src/math/trunc.rs>.
@@ -241,11 +260,29 @@ impl F64 {
 
 	/// See [`f64::round_ties_even()`].
 	#[allow(clippy::disallowed_methods)]
-	#[cfg(all(feature = "std", feature = "msrv"))]
-	#[rustversion::since(1.77)]
+	#[cfg(all(feature = "std", v1_77))]
 	fn internal_round_ties_even(self) -> f64 {
 		#[allow(clippy::incompatible_msrv)]
 		self.0.round_ties_even()
+	}
+
+	#[cfg(all(not(all(feature = "std", v1_77)), nightly))]
+	fn internal_round_ties_even(self) -> f64 {
+		let output;
+		// SAFETY: No side effects.
+		#[allow(unsafe_code)]
+		unsafe {
+			core::arch::asm! {
+				"local.get {}",
+				"f64.nearest",
+				"local.set {}",
+				in(local) self.0,
+				lateout(local) output,
+				options(pure, nomem),
+			};
+		}
+
+		output
 	}
 
 	/// A specialized version of [`f64::round_ties_even()`]. [`f64`] must be
@@ -258,7 +295,7 @@ impl F64 {
 	///   `19`. Therefor the resulting exponent can at most be `19`.
 	///
 	/// [`f64::round_ties_even()`]: https://doc.rust-lang.org/1.83.0/std/primitive.f64.html#method.round_ties_even
-	#[cfg_attr(all(feature = "std", feature = "msrv"), rustversion::before(1.77))]
+	#[cfg(not(any(all(feature = "std", v1_77), nightly)))]
 	fn internal_round_ties_even(self) -> f64 {
 		/// Put `debug_assert!` in a function to clap `coverage(off)` on it.
 		///

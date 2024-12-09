@@ -28,6 +28,7 @@ jobs:
           - { target: wasm32-unknown-unknown, description: Web }
         rust:
           - { version: stable, atomics: false }
+          - { version: nightly, atomics: false }
           - {
               version: nightly,
               description: with Atomics,
@@ -37,20 +38,32 @@ jobs:
               build-std: true,
             }
         features:
-          - { features: "", description: (`default`) }
-          - { features: --features serde, description: (`default` `serde`) }
-          - { features: --no-default-features --features std, no_msrv: true, description: (`std`) }
-          - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - { features: "", native: true, description: (`default`) }
+          - { features: --features serde, native: false, description: (`default` `serde`) }
+          - { features: --no-default-features --features std, native: false, description: (`std`) }
+          - { features: --no-default-features, no_std: true, native: true, description: (`no_std`) }
           - {
-              features: --no-default-features --features serde,
+              features: "--no-default-features --features msrv,serde",
               no_std: true,
-              description: "(`no_std`, `serde`)",
+              description: "(`no_std`, `msrv`, `serde`)",
+            }
+          - {
+              features: "--no-default-features --features msrv,serde",
+              no_std: true,
+              nightly: true,
+              description: "Nightly (`no_std`, `msrv`, `serde`)",
             }
         exclude:
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
             rust: { atomics: true }
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            features: { no_msrv: true }
+            features: { native: false }
+          - rust: { version: nightly, atomics: false }
+            features: { nightly: false }
+          - features: { nightly: true }
+            rust: { version: stable }
+          - rust: { atomics: true }
+            features: { nightly: true }
 
     steps:
       - name: Checkout
@@ -97,27 +110,38 @@ jobs:
               build-std: true,
             }
         features:
-          - { features: "", description: (`default`) }
+          - { features: "", native: true, description: (`default`) }
           - { features: --features serde, description: (`default` `serde`) }
-          - { features: --no-default-features --features std, no_msrv: true, description: (`std`) }
-          - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - { features: --no-default-features --features std, description: (`std`) }
+          - { features: --no-default-features, no_std: true, native: true, description: (`no_std`) }
           - {
-              features: --no-default-features --features serde,
+              features: "--no-default-features --features msrv,serde",
               no_std: true,
-              description: "(`no_std`, `serde`)",
+              description: "(`no_std`, `msrv`, `serde`)",
+            }
+          - {
+              features: "--no-default-features --features msrv,serde",
+              no_std: true,
+              nightly: true,
+              description: "Nightly (`no_std`, `msrv`, `serde`)",
             }
         docsrs:
           - { flags: "", nightly: false }
           - { description: (docs.rs), flags: --cfg=docsrs, nightly: true }
         exclude:
           - docsrs: { flags: "", nightly: false }
-            rust: { version: nightly }
+            rust: { version: nightly, atomics: false }
+            features: { nightly: false }
           - docsrs: { flags: --cfg=docsrs, nightly: true }
             rust: { version: stable }
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
             rust: { atomics: true }
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            features: { no_msrv: true }
+            features: { native: false }
+          - features: { nightly: true }
+            rust: { version: stable }
+          - rust: { atomics: true }
+            features: { nightly: true }
 
     steps:
       - name: Checkout

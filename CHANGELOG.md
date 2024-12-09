@@ -16,9 +16,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   MSRVs. This offers compile-time detection and does not break compilation when enabled with the
   crates MSRV.
 
-  When used in conjunction with the `std` crate feature and compiling with Rust v1.77 or above, it
-  enables the use of the [`f64.nearest`] instruction. Which will significantly reduce the
-  instruction count for `Instant::now()`.
+  - Rust v1.77 + `std`: Enables the use of the [`f64.nearest`] instruction. Which will significantly
+    reduce the instruction count for `Instant::now()`.
+  - Rust Nightly: Enables the use of the [`f64.trunc`] and [`f64.nearest`] instruction. Which will
+    significantly reduce the instruction count for `Instant::now()`.
 
 ### Changed
 
@@ -34,6 +35,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 [`wasm32v1-none`]: https://doc.rust-lang.org/nightly/rustc/platform-support/wasm32v1-none.html
 [`f64.nearest`]:
 	https://webassembly.github.io/spec/core/syntax/instructions.html#syntax-instr-numeric
+[`f64.trunc`]: https://webassembly.github.io/spec/core/syntax/instructions.html#syntax-instr-numeric
 
 ## [1.1.0] - 2024-03-01
 
