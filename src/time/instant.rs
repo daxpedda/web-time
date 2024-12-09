@@ -1,4 +1,6 @@
 //! Re-implementation of [`std::time::Instant`].
+//!
+//! See <https://github.com/rust-lang/rust/blob/1.83.0/library/std/src/time.rs#L271-L468>.
 #![cfg_attr(
 	not(feature = "std"),
 	doc = "",

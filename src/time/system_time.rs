@@ -1,5 +1,6 @@
 //! Re-implementation of [`std::time::SystemTime`].
-
+//!
+//! See <https://github.com/rust-lang/rust/blob/1.83.0/library/std/src/time.rs#L470-L707>.
 #![cfg_attr(
 	not(feature = "std"),
 	doc = "",
@@ -56,11 +57,10 @@ impl SystemTime {
 	)]
 	#[allow(clippy::missing_errors_doc, clippy::trivially_copy_pass_by_ref)]
 	pub fn duration_since(&self, earlier: Self) -> Result<Duration, SystemTimeError> {
-		if self.0 < earlier.0 {
-			Err(SystemTimeError(earlier.0 - self.0))
-		} else {
-			Ok(self.0 - earlier.0)
-		}
+		// See <https://github.com/rust-lang/rust/blob/1.83.0/library/std/src/sys/pal/unsupported/time.rs#L34-L36>.
+		self.0
+			.checked_sub(earlier.0)
+			.ok_or_else(|| SystemTimeError(earlier.0 - self.0))
 	}
 
 	/// See [`std::time::SystemTime::elapsed()`].
