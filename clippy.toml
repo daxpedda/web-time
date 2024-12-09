@@ -5,7 +5,7 @@ disallowed-methods = [
 	{ path = "f64::trunc", reason = "not available on `no_std`" },
 	{ path = "f64::fract", reason = "not available on `no_std`" },
 	{ path = "f64::copysign", reason = "not available on `no_std`" },
-	{ path = "f64::round", reason = "not available on `no_std`" },
+	{ path = "f64::round_ties_even", reason = "not available on `no_std` and MSRV" },
 	{ path = "f64::powi", reason = "not available on `no_std`" },
 ]
 semicolon-outside-block-ignore-multiline = true

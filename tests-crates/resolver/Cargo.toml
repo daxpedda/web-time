@@ -10,6 +10,7 @@ version = "0.0.0"
 
 [features]
 default = ["web-time/default"]
+msrv = ["web-time/msrv"]
 serde = ["web-time/serde"]
 std = ["web-time/std"]
 

@@ -40,13 +40,24 @@ jobs:
               build-std: true,
             }
         features:
-          - { features: "", no_std: false }
-          - { features: --features serde, no_std: false, description: (`serde`) }
+          - { features: "", description: (`default`) }
+          - { features: --features serde, description: "(`default`, `serde`)" }
+          - { features: --no-default-features --features std, description: (`std`) }
           - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - {
+              features: --no-default-features --features msrv,
+              no_std: true,
+              description: "(`no_std`, `msrv`)",
+            }
           - {
               features: --no-default-features --features serde,
               no_std: true,
               description: "(`no_std`, `serde`)",
+            }
+          - {
+              features: "--no-default-features --features msrv,serde",
+              no_std: true,
+              description: "(`no_std`, `msrv`, `serde`)",
             }
         exclude:
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
@@ -109,13 +120,24 @@ jobs:
           - { version: stable }
           - { version: nightly }
         features:
-          - { features: "", no_std: false }
-          - { features: --features serde, no_std: false, description: (`serde`) }
+          - { features: "", description: (`default`) }
+          - { features: --features serde, description: "(`default`, `serde`)" }
+          - { features: --no-default-features --features std, description: (`std`) }
           - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - {
+              features: --no-default-features --features msrv,
+              no_std: true,
+              description: "(`no_std`, `msrv`)",
+            }
           - {
               features: --no-default-features --features serde,
               no_std: true,
               description: "(`no_std`, `serde`)",
+            }
+          - {
+              features: "--no-default-features --features msrv,serde",
+              no_std: true,
+              description: "(`no_std`, `msrv`, `serde`)",
             }
         exclude:
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
@@ -169,13 +191,24 @@ jobs:
           - { version: stable }
           - { version: nightly }
         features:
-          - { features: "", no_std: false }
-          - { features: --features serde, no_std: false, description: (`serde`) }
+          - { features: "", description: (`default`) }
+          - { features: --features serde, description: "(`default`, `serde`)" }
+          - { features: --no-default-features --features std, description: (`std`) }
           - { features: --no-default-features, no_std: true, description: (`no_std`) }
+          - {
+              features: --no-default-features --features msrv,
+              no_std: true,
+              description: "(`no_std`, `msrv`)",
+            }
           - {
               features: --no-default-features --features serde,
               no_std: true,
               description: "(`no_std`, `serde`)",
+            }
+          - {
+              features: "--no-default-features --features msrv,serde",
+              no_std: true,
+              description: "(`no_std`, `msrv`, `serde`)",
             }
         exclude:
           - target: { target: x86_64-unknown-linux-gnu, description: Native }

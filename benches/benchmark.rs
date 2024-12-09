@@ -90,7 +90,7 @@ pub fn main() {
 	});
 	benchmark("`Duration::from_millis()` with rounding", |time_stamp| {
 		Duration::from_millis(F64(time_stamp).trunc() as u64)
-			+ Duration::from_nanos(F64(F64(time_stamp).fract() * 1.0e6).round() as u64)
+			+ Duration::from_nanos(F64(F64(time_stamp).fract() * 1.0e6).round_ties_even() as u64)
 	});
 	benchmark("`Duration::from_secs_f64()`", |time_stamp| {
 		Duration::from_secs_f64(time_stamp) / 1000
@@ -155,20 +155,20 @@ impl F64 {
 		self.0 - self.trunc()
 	}
 
-	/// See [`f64::round()`].
+	/// See [`f64::round_ties_even()`].
 	#[cfg(feature = "std")]
 	#[expect(
 		clippy::disallowed_methods,
 		reason = "this is where the abstraction happens"
 	)]
 	#[cfg(feature = "std")]
-	fn round(self) -> f64 {
-		self.0.round()
+	fn round_ties_even(self) -> f64 {
+		self.0.round_ties_even()
 	}
 
 	#[cfg(not(feature = "std"))]
-	fn round(self) -> f64 {
-		libm::round(self.0)
+	fn round_ties_even(self) -> f64 {
+		libm::rint(self.0)
 	}
 }
 

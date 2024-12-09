@@ -1,4 +1,4 @@
-25
+26
 1G
 1M
 1ns
@@ -13,6 +13,7 @@ io
 JS
 MDN
 MSRV
+MSRVs
 representable
 Serde
 Serde's

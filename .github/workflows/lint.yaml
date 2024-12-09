@@ -26,10 +26,8 @@ jobs:
         target:
           - { target: x86_64-unknown-linux-gnu, description: Native }
           - { target: wasm32-unknown-unknown, description: Web }
-          - { target: wasm32v1-none, description: Wasm v1 }
         rust:
           - { version: stable, atomics: false }
-          - { version: nightly, atomics: false }
           - {
               version: nightly,
               description: with Atomics,
@@ -39,8 +37,9 @@ jobs:
               build-std: true,
             }
         features:
-          - { features: "", no_std: false }
-          - { features: --features serde, no_std: false, description: (`serde`) }
+          - { features: "", description: (`default`) }
+          - { features: --features serde, description: (`default` `serde`) }
+          - { features: --no-default-features --features std, no_msrv: true, description: (`std`) }
           - { features: --no-default-features, no_std: true, description: (`no_std`) }
           - {
               features: --no-default-features --features serde,
@@ -49,13 +48,9 @@ jobs:
             }
         exclude:
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            rust: { version: nightly }
-          - target: { target: wasm32-unknown-unknown, description: Web }
-            rust: { version: nightly, atomics: false }
-          - target: { target: wasm32v1-none, description: Wasm v1 }
-            rust: { version: stable }
-          - target: { target: wasm32v1-none, description: Wasm v1 }
-            features: { no_std: false }
+            rust: { atomics: true }
+          - target: { target: x86_64-unknown-linux-gnu, description: Native }
+            features: { no_msrv: true }
 
     steps:
       - name: Checkout
@@ -90,7 +85,6 @@ jobs:
         target:
           - { target: x86_64-unknown-linux-gnu, description: Native }
           - { target: wasm32-unknown-unknown, description: Web }
-          - { target: wasm32v1-none, description: Wasm v1 }
         rust:
           - { version: stable, atomics: false }
           - { version: nightly, atomics: false }
@@ -103,8 +97,9 @@ jobs:
               build-std: true,
             }
         features:
-          - { features: "", no_std: false }
-          - { features: --features serde, no_std: false, description: (`serde`) }
+          - { features: "", description: (`default`) }
+          - { features: --features serde, description: (`default` `serde`) }
+          - { features: --no-default-features --features std, no_msrv: true, description: (`std`) }
           - { features: --no-default-features, no_std: true, description: (`no_std`) }
           - {
               features: --no-default-features --features serde,
@@ -115,20 +110,14 @@ jobs:
           - { flags: "", nightly: false }
           - { description: (docs.rs), flags: --cfg=docsrs, nightly: true }
         exclude:
+          - docsrs: { flags: "", nightly: false }
+            rust: { version: nightly }
           - docsrs: { flags: --cfg=docsrs, nightly: true }
             rust: { version: stable }
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
             rust: { atomics: true }
           - target: { target: x86_64-unknown-linux-gnu, description: Native }
-            docsrs: { flags: "", nightly: false }
-            rust: { version: nightly }
-          - target: { target: wasm32-unknown-unknown, description: Web }
-            docsrs: { flags: "", nightly: false }
-            rust: { version: nightly, atomics: false }
-          - target: { target: wasm32v1-none, description: Wasm v1 }
-            rust: { version: stable }
-          - target: { target: wasm32v1-none, description: Wasm v1 }
-            features: { no_std: false }
+            features: { no_msrv: true }
 
     steps:
       - name: Checkout

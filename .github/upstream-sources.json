@@ -1,7 +1,6 @@
 [
 	{ "owner": "rust-lang", "repo": "libm", "tag": "libm-v0.2.11", "path": "src/math/trunc.rs" },
-	{ "owner": "rust-lang", "repo": "libm", "tag": "libm-v0.2.11", "path": "src/math/copysign.rs" },
-	{ "owner": "rust-lang", "repo": "libm", "tag": "libm-v0.2.11", "path": "src/math/round.rs" },
+	{ "owner": "rust-lang", "repo": "libm", "tag": "libm-v0.2.11", "path": "src/math/rint.rs" },
 	{ "owner": "rust-lang", "repo": "rust", "tag": "1.83.0", "path": "library/core/src/time.rs" },
 	{ "owner": "rust-lang", "repo": "rust", "tag": "1.83.0", "path": "library/std/src/time.rs" },
 	{

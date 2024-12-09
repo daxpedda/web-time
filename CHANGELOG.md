@@ -12,6 +12,18 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - [`no_std`] support through a `std` crate feature.
 - Support for the [`wasm32v1-none`] target.
 - MSRV policy.
+- A `msrv` crate feature that allows `web-time` to make use of features only available in higher
+  MSRVs. This offers compile-time detection and does not break compilation when enabled with the
+  crates MSRV.
+
+  When used in conjunction with the `std` crate feature and compiling with Rust v1.77 or above, it
+  enables the use of the [`f64.nearest`] instruction. Which will significantly reduce the
+  instruction count for `Instant::now()`.
+
+### Changed
+
+- Improve performance of `Instant::now()` by using `f64::round_ties_even()` instead of
+  `f64::round()` internally.
 
 ### Fixed
 
@@ -20,6 +32,8 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 [`no_std`]: https://doc.rust-lang.org/1.82.0/reference/names/preludes.html#the-no_std-attribute
 [`wasm32v1-none`]: https://doc.rust-lang.org/nightly/rustc/platform-support/wasm32v1-none.html
+[`f64.nearest`]:
+	https://webassembly.github.io/spec/core/syntax/instructions.html#syntax-instr-numeric
 
 ## [1.1.0] - 2024-03-01
 

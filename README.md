@@ -73,6 +73,15 @@ instruction output.
 Without this crate feature compilation the standard library is not included. Has no effect on
 targets other then `wasm32-unknown-unknown` or `wasm32v1-none`.
 
+### `msrv` (enabled by default)
+
+Allows `web-time` to make use of features only available in higher MSRVs. This offers compile-time
+detection and does not break compilation when enabled with the crates MSRV.
+
+When used in conjunction with the `std` crate feature and compiling with Rust v1.77 or above, it
+enables the use of the [`f64.nearest`] instruction. Which will significantly reduce the instruction
+count for [`Instant::now()`].
+
 ### `serde`
 
 Implements [`serde::Deserialize`] and [`serde::Serialize`] for [`SystemTime`].
@@ -140,3 +149,5 @@ additional terms or conditions.
 [`serde::Deserialize`]: https://docs.rs/serde/1/serde/trait.Deserialize.html
 [`serde::Serialize`]: https://docs.rs/serde/1/serde/trait.Serialize.html
 [`wasm-bindgen`]: https://crates.io/crates/wasm-bindgen
+[`f64.nearest`]:
+	https://webassembly.github.io/spec/core/syntax/instructions.html#syntax-instr-numeric
