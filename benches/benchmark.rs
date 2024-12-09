@@ -16,12 +16,10 @@ extern crate alloc;
 #[cfg(not(feature = "std"))]
 use alloc::borrow::ToOwned;
 #[cfg(not(feature = "std"))]
-use alloc::format;
+use alloc::{format, vec::Vec};
 use core::time::Duration;
-use core::{array, hint};
+use core::{hint, iter};
 
-#[cfg(not(feature = "std"))]
-use const_soft_float::soft_f64::SoftF64;
 use rand::distributions::Uniform;
 use rand::rngs::{OsRng, StdRng};
 use rand::{Rng, SeedableRng};
@@ -30,10 +28,8 @@ use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsCast;
 use web_sys::{HtmlTableElement, HtmlTableRowElement};
 
-/// Inner repetitions.
-const INNER: usize = 10000;
-/// Outer repetitions.
-const OUTER: usize = 10000;
+/// Number of runs for the benchmark.
+const RUNS: usize = 100_000_000;
 
 /// Main function.
 #[cfg_attr(not(feature = "std"), wasm_bindgen::prelude::wasm_bindgen(main))]
@@ -57,24 +53,21 @@ pub fn main() {
 				.unwrap()
 				.sample_iter(Uniform::new_inclusive(
 					0.,
-					F64(2.).powi(i32::try_from(f64::MANTISSA_DIGITS).unwrap()),
+					u64::pow(2, f64::MANTISSA_DIGITS) as f64,
 				));
 
-			let mut time = 0.;
+			let time_stamps: Vec<_> = iter::repeat_with(|| random.next().unwrap())
+				.take(RUNS)
+				.collect();
 
-			for _ in 0..OUTER {
-				let time_stamps: [f64; INNER] = array::from_fn(|_| random.next().unwrap());
+			let start = performance.now();
 
-				let start = performance.now();
-
-				for time_stamp in time_stamps {
-					hint::black_box(run(hint::black_box(time_stamp)));
-				}
-
-				time += performance.now() - start;
+			for time_stamp in time_stamps {
+				hint::black_box(run(time_stamp));
 			}
 
-			let time = time / const { ((INNER * OUTER) / 1_000_000) as f64 };
+			let time = performance.now() - start;
+			let time = time / const { (RUNS / 1_000_000) as f64 };
 
 			let row: HtmlTableRowElement = table.insert_row().unwrap().unchecked_into();
 			let cell = row.insert_cell().unwrap();
@@ -143,9 +136,8 @@ impl F64 {
 	}
 
 	#[cfg(not(feature = "std"))]
-	#[expect(clippy::missing_const_for_fn, reason = "compatibility with `std`")]
 	fn trunc(self) -> f64 {
-		SoftF64(self.0).trunc().0
+		libm::trunc(self.0)
 	}
 
 	/// See [`f64::fract()`].
@@ -175,25 +167,8 @@ impl F64 {
 	}
 
 	#[cfg(not(feature = "std"))]
-	#[expect(clippy::missing_const_for_fn, reason = "compatibility with `std`")]
 	fn round(self) -> f64 {
-		SoftF64(self.0).round().0
-	}
-
-	/// See [`f64::powi()`].
-	#[cfg(feature = "std")]
-	#[expect(
-		clippy::disallowed_methods,
-		reason = "this is where the abstraction happens"
-	)]
-	fn powi(self, n: i32) -> f64 {
-		self.0.powi(n)
-	}
-
-	#[cfg(not(feature = "std"))]
-	#[expect(clippy::missing_const_for_fn, reason = "compatibility with `std`")]
-	fn powi(self, n: i32) -> f64 {
-		SoftF64(self.0).powi(n).0
+		libm::round(self.0)
 	}
 }
 
