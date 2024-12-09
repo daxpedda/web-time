@@ -15,6 +15,8 @@ use core::time::Duration;
 #[cfg(feature = "std")]
 use std::error::Error;
 
+use super::js::Date;
+
 /// See [`std::time::SystemTime`].
 #[cfg_attr(
 	not(feature = "std"),
@@ -43,7 +45,7 @@ impl SystemTime {
 	#[allow(clippy::missing_panics_doc)]
 	pub fn now() -> Self {
 		#[allow(clippy::as_conversions, clippy::cast_possible_truncation)]
-		let ms = js_sys::Date::now() as i64;
+		let ms = Date::now() as i64;
 		let ms = ms.try_into().expect("found negative timestamp");
 
 		Self(Duration::from_millis(ms))

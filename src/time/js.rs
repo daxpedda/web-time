@@ -19,4 +19,11 @@ extern "C" {
 	#[cfg(target_feature = "atomics")]
 	#[wasm_bindgen(thread_local_v2, js_namespace = ["globalThis", "performance"], js_name = timeOrigin)]
 	pub(super) static TIME_ORIGIN: f64;
+
+	/// Type for the [`Date` object](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date).
+	pub(super) type Date;
+
+	/// Binding to [`Date.now()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/now).
+	#[wasm_bindgen(static_method_of = Date)]
+	pub(super) fn now() -> f64;
 }

@@ -23,7 +23,6 @@ serde = ["dep:serde"]
 std = ["wasm-bindgen-test/std", "getrandom/std", "rand/std", "tests-native/std", "tests-web/std"]
 
 [target.'cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))'.dependencies]
-js-sys = { version = "0.3.75", default-features = false }
 serde = { version = "1.0.0", optional = true, default-features = false }
 wasm-bindgen = { version = "0.2.98", default-features = false }
 

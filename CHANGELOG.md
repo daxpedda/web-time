@@ -25,6 +25,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Improve performance of `Instant::now()` by using `f64::round_ties_even()` instead of
   `f64::round()` internally.
+- Removed `js-sys` dependency in favor of custom bindings.
 
 ### Fixed
 
