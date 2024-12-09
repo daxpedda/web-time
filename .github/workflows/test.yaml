@@ -137,6 +137,7 @@ jobs:
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
+          WASM_BINDGEN_TEST_DRIVER_TIMEOUT: 10
         run:
           cargo test --features serde ${{ matrix.features.features }} --target ${{
           matrix.target.target }} $BUILD_STD_COMPONENTS --workspace ${{ matrix.target.docargs }}
