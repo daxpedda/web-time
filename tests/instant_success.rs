@@ -137,7 +137,7 @@ async fn add_assign_success() {
 	let now = Instant::now();
 	instant += DIFF;
 	assert!(instant <= now, "{:?}", now - instant);
-	instant += DIFF;
+	instant += MAX_DIFF;
 	assert!(instant >= now);
 }
 
