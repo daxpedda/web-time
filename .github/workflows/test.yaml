@@ -133,8 +133,36 @@ jobs:
       - name: Start and set WebDriver
         if: matrix.driver.browser == true
         run: |
-          ${{ matrix.driver.binary }} --port=9000 &
-          echo "${{ matrix.driver.env }}_REMOTE=http://127.0.0.1:9000" >> $GITHUB_ENV
+          iteration=5
+
+          while true; do
+            if (( iteration == 0 )); then
+              echo "CI: Failed to start driver."
+              exit 1
+            fi
+
+            (( iteration-- ))
+
+            ${{ matrix.driver.binary }} --port=9000 2>stderr &
+            process_pid=$!
+            tail -f stderr >&2 &
+
+            if [[ $(wc -l < stderr) -gt 0 ]]; then
+              echo "CI: WebDriver failed"
+              kill -SIGKILL $process_pid || true
+              echo
+
+              echo "CI: stderr:"
+              sed 's/^/CI:    /' stderr
+              echo
+
+              echo "CI: Re-trying to start the WebDriver."
+            else
+              echo "Successfully started WebDriver on port 9000."
+              echo "${{ matrix.driver.env }}_REMOTE=http://127.0.0.1:9000" >> $GITHUB_ENV
+              break
+            fi
+          done
       - name: Set environment
         if: matrix.environment.name != ''
         run: echo "${{ matrix.environment.name }}=1" >> $GITHUB_ENV
