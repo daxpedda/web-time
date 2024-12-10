@@ -49,23 +49,23 @@ jobs:
           - {
               os: ubuntu-latest,
               description: Chrome,
-              name: CHROMEDRIVER,
-              value: chromedriver,
+              env: CHROMEDRIVER,
+              binary: chromedriver,
               browser: true,
             }
           - {
               os: ubuntu-latest,
               description: Firefox,
-              name: GECKODRIVER,
-              value: geckodriver,
+              env: GECKODRIVER,
+              binary: geckodriver,
               browser: true,
               firefox: true,
             }
           - {
               os: macos-latest,
               description: Safari,
-              name: SAFARIDRIVER,
-              value: safaridriver,
+              env: SAFARIDRIVER,
+              binary: safaridriver,
               browser: true,
             }
           - { os: ubuntu-24.04, description: Node.js, nodejs: true }
@@ -130,17 +130,18 @@ jobs:
       - name: Set `build-std` `no_std` components
         if: matrix.rust.build-std == true && matrix.features.no_std == true
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
-      - name: Set Driver
+      - name: Start and set WebDriver
         if: matrix.driver.browser == true
-        run: echo "${{ matrix.driver.name }}=${{ matrix.driver.value }}" >> $GITHUB_ENV
-      - name: Set Environment
+        run: |
+          ${{ matrix.driver.binary }} --port=9000 &
+          echo "${{ matrix.driver.env }}_REMOTE=http://127.0.0.1:9000" >> $GITHUB_ENV
+      - name: Set environment
         if: matrix.environment.name != ''
         run: echo "${{ matrix.environment.name }}=1" >> $GITHUB_ENV
       - name: Test
         env:
           RUSTFLAGS: ${{ matrix.rust.flags }}
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
-          WASM_BINDGEN_TEST_DRIVER_TIMEOUT: 20
         run:
           cargo test --features serde ${{ matrix.features.features }} --target ${{
           matrix.target.target }} $BUILD_STD_COMPONENTS --workspace ${{ matrix.target.docargs }}

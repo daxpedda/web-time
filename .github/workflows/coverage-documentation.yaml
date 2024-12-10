@@ -68,8 +68,9 @@ jobs:
       - name: Test
         env:
           WASM_BINDGEN_USE_BROWSER: 1
-          CHROMEDRIVER: chromedriver
+          CHROMEDRIVER_REMOTE: http://127.0.0.1:9000
         run: |
+          chromedriver --port=9000 &
           mkdir coverage-output
           WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-output) cargo test --workspace --features serde --target wasm32-unknown-unknown $BUILD_STD_COMPONENTS ${{ matrix.features.features }} --tests
       - name: Prepare Object Files
