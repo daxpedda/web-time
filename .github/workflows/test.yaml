@@ -88,7 +88,7 @@ jobs:
               browser: true,
               service-worker: true,
             }
-          - { browser: false }
+          - { name: WASM_BINDGEN_USE_NODE_EXPERIMENTAL, nodejs: true }
         include:
           - target: { target: x86_64-unknown-linux-gnu }
             rust: { version: stable }
@@ -106,17 +106,16 @@ jobs:
           # Firefox doesn't support module service workers.
           - driver: { firefox: true }
             environment: { service-worker: true }
-          # `wasm-bindgen` support of Node.js with atomics is incomplete.
-          - driver: { nodejs: true }
-            rust: { atomics: true }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install `wasm-bindgen-cli`
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/cache-cargo-install-action@v2
         with:
           tool: wasm-bindgen-cli
+          git: https://github.com/daxpedda/wasm-bindgen
+          rev: 9dc93d8c096cdb50c2c2d8a181f337ddfa927517
       - name: Install Rust
         run: |
           rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
@@ -131,7 +130,7 @@ jobs:
         if: matrix.driver.browser == true
         run: echo "${{ matrix.driver.name }}=${{ matrix.driver.value }}" >> $GITHUB_ENV
       - name: Set Environment
-        if: matrix.environment.browser == true
+        if: matrix.environment.browser == true || matrix.environment.nodejs == true
         run: echo "${{ matrix.environment.name }}=1" >> $GITHUB_ENV
       - name: Test
         env:
