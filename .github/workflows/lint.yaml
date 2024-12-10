@@ -163,3 +163,16 @@ jobs:
         run:
           cargo doc --workspace --no-deps --document-private-items --lib --examples ${{
           matrix.features.features }} --target ${{ matrix.target.target }} $BUILD_STD_COMPONENTS
+
+  file-permissions:
+    name: File Permissions
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: List all files that are executable
+        run: find -type f -executable ! -path './.git/*'
+      - name: Fail if any executable files were found
+        run: find -type f -executable ! -path './.git/*' -exec false {} +
