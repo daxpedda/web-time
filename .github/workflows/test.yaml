@@ -88,7 +88,8 @@ jobs:
               browser: true,
               service-worker: true,
             }
-          - { name: WASM_BINDGEN_USE_NODE_EXPERIMENTAL, nodejs: true }
+          - { nodejs: true, no-modules: true }
+          - { description: ESM, name: WASM_BINDGEN_USE_NODE_EXPERIMENTAL, nodejs: true }
         include:
           - target: { target: x86_64-unknown-linux-gnu }
             rust: { version: stable }
@@ -106,6 +107,9 @@ jobs:
           # Firefox doesn't support module service workers.
           - driver: { firefox: true }
             environment: { service-worker: true }
+          # Thread spawning is only supported for ESM
+          - rust: { atomics: true }
+            environment: { no-modules: true }
 
     steps:
       - name: Checkout
@@ -130,7 +134,7 @@ jobs:
         if: matrix.driver.browser == true
         run: echo "${{ matrix.driver.name }}=${{ matrix.driver.value }}" >> $GITHUB_ENV
       - name: Set Environment
-        if: matrix.environment.browser == true || matrix.environment.nodejs == true
+        if: matrix.environment.name != ''
         run: echo "${{ matrix.environment.name }}=1" >> $GITHUB_ENV
       - name: Test
         env:
