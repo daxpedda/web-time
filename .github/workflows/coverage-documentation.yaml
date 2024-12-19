@@ -39,17 +39,19 @@ jobs:
 
     env:
       CFLAGS_wasm32_unknown_unknown: ${{ matrix.mt.cflags }}
-      RUSTFLAGS:
+      CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS:
         -Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir
-        --cfg=wasm_bindgen_unstable_test_coverage ${{ matrix.mt.flags }}
+        --cfg=web_time_test_coverage ${{ matrix.mt.flags }}
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install `wasm-bindgen-cli`
-        uses: taiki-e/install-action@v2
+        uses: taiki-e/cache-cargo-install-action@v2
         with:
           tool: wasm-bindgen-cli
+          git: https://github.com/daxpedda/wasm-bindgen
+          rev: d4cb4a5d94090c18b469796250744612fd347dbd
       - name: Install Clang v19
         run: |
           wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key | sudo apt-key add -
@@ -72,7 +74,7 @@ jobs:
         run: |
           chromedriver --port=9000 &
           mkdir coverage-output
-          WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-output) cargo test --workspace --features serde --target wasm32-unknown-unknown $BUILD_STD_COMPONENTS ${{ matrix.features.features }} --tests
+          LLVM_PROFILE_FILE=$(realpath coverage-output)/%m_%p.profraw cargo test --workspace --features serde --target wasm32-unknown-unknown $BUILD_STD_COMPONENTS ${{ matrix.features.features }} --tests
       - name: Prepare Object Files
         run: |
           mkdir coverage-input

@@ -33,6 +33,7 @@ jobs:
               version: nightly,
               description: with Atomics,
               component: --component rust-src,
+              cflags: -matomics -mbulk-memory,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
               build-std: true,
               atomics: true,
@@ -67,6 +68,7 @@ jobs:
               env: SAFARIDRIVER,
               binary: safaridriver,
               browser: true,
+              macos: true,
             }
           - { os: ubuntu-24.04, description: Node.js, nodejs: true }
         environment:
@@ -119,11 +121,16 @@ jobs:
         with:
           tool: wasm-bindgen-cli
           git: https://github.com/daxpedda/wasm-bindgen
-          rev: 9dc93d8c096cdb50c2c2d8a181f337ddfa927517
+          rev: d4cb4a5d94090c18b469796250744612fd347dbd
       - name: Install Rust
         run: |
           rustup toolchain install ${{ matrix.rust.version }} --profile minimal ${{ matrix.rust.component }} --target ${{ matrix.target.target }}
           rustup default ${{ matrix.rust.version }}
+      - name: Install Clang with `wasm32-unknown-unknown` support on MacOS
+        if: matrix.driver.macos == true
+        run: |
+          brew install llvm
+          echo "$(brew --prefix llvm)/bin" >> $GITHUB_PATH
       - name: Set `build-std` components
         if: matrix.rust.build-std == true && matrix.features.no_std == false
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=panic_abort,std" >> $GITHUB_ENV
@@ -168,7 +175,8 @@ jobs:
         run: echo "${{ matrix.environment.name }}=1" >> $GITHUB_ENV
       - name: Test
         env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
+          CFLAGS_wasm32_unknown_unknown: ${{ matrix.rust.cflags }}
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: ${{ matrix.rust.flags }}
           RUSTDOCFLAGS: ${{ matrix.rust.flags }}
         run:
           cargo test --features serde ${{ matrix.features.features }} --target ${{

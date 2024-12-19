@@ -44,9 +44,9 @@ Example usage:
 # Installing Rust nightly and necessary components:
 rustup toolchain install nightly --target wasm32-unknown-unknown --component rust-src
 # Example `cargo build` usage:
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
+CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
 # Example `no_std` `cargo build` usage:
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build --target wasm32v1-none -Zbuild-std=core,alloc --no-default-features
+CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly build --target wasm32v1-none -Zbuild-std=core,alloc --no-default-features
 ```
 
 [`build-std`]: https://doc.rust-lang.org/1.73.0/cargo/reference/unstable.html#build-std
@@ -61,11 +61,12 @@ Here is an example configuration for Visual Studio Code:
 ```json
 "rust-analyzer.cargo.target": "wasm32-unknown-unknown",
 "rust-analyzer.cargo.extraArgs": [
-    "-Zbuild-std=panic_abort,std"
+    "-Zbuild-std=panic_abort,std",
 ],
 "rust-analyzer.cargo.extraEnv": {
     "RUSTUP_TOOLCHAIN": "nightly",
-    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory"
+    "RUSTFLAGS": "-Ctarget-feature=+atomics,+bulk-memory",
+    "CFLAGS_wasm32_unknown_unknown": "-matomics -mbulk-memory",
 },
 ```
 
@@ -99,7 +100,7 @@ cargo test --workspace --target wasm32-unknown-unknown
 # Run tests for `no_std`.
 cargo +nightly test --workspace --target wasm32v1-none --no-default-features
 # Run tests for Wasm atomics.
-RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly test --workspace --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
+CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" RUSTFLAGS=-Ctarget-feature=+atomics,+bulk-memory cargo +nightly test --workspace --target wasm32-unknown-unknown -Zbuild-std=panic_abort,std
 ```
 
 Make sure not to use `--all-features`.
@@ -175,18 +176,25 @@ full test coverage data via an artifact called `test-coverage`.
 If you want to generate test coverage locally, here is an example shell script that you can use:
 
 ```sh
+rm -rf coverage-input
+rm -rf coverage-output
+
 # Single-threaded test run.
 st () {
-    RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg=wasm_bindgen_unstable_test_coverage" cargo +nightly test --workspace --features serde --target wasm32-unknown-unknown --tests $@
+    CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg web_time_test_coverage" cargo +nightly $1 --workspace --features serde --target wasm32-unknown-unknown --tests ${@:2}
 }
 
 # Multi-threaded test run.
 mt () {
-    CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir --cfg=wasm_bindgen_unstable_test_coverage -Ctarget-feature=+atomics,+bulk-memory" cargo +nightly test --workspace --features serde --target wasm32-unknown-unknown --tests $@
+    CFLAGS_wasm32_unknown_unknown="-matomics -mbulk-memory" CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS="-Cinstrument-coverage -Zcoverage-options=condition -Zno-profiler-runtime --emit=llvm-ir -Ctarget-feature=+atomics,+bulk-memory --cfg web_time_test_coverage" cargo +nightly $1 --workspace --features serde --target wasm32-unknown-unknown --tests ${@:2}
 }
 
 # To collect object files.
 objects=()
+
+# Start Chromedriver in the background
+chromedriver --port=9000 &
+pid=$!
 
 # Run tests and adjust LLVM IR.
 test () {
@@ -195,13 +203,13 @@ test () {
 
     # Run tests.
     mkdir -p coverage-input/$path
-    WASM_BINDGEN_USE_BROWSER=1 CHROMEDRIVER=chromedriver WASM_BINDGEN_UNSTABLE_TEST_PROFRAW_OUT=$(realpath coverage-input/$path) $command ${@:3}
+    WASM_BINDGEN_USE_BROWSER=1 CHROMEDRIVER_REMOTE=http://127.0.0.1:9000 LLVM_PROFILE_FILE=$(realpath coverage-input/$path/%m_%p.profraw) $command 'nextest run' ${@:3}
 
     local crate_name=web_time
     local IFS=$'\n'
     for file in $(
         # Extract path to artifacts.
-        $command ${@:3} --no-run --message-format=json | \
+        $command 'test' ${@:3} --no-run --message-format=json | \
         jq -r "select(.reason == \"compiler-artifact\") | (select(.target.kind == [\"test\"]) // select(.target.name == \"$crate_name\")) | .filenames[0]"
     )
     do
@@ -226,6 +234,9 @@ test st 'st'
 test st 'st-no_std' --no-default-features
 test mt 'mt' -Zbuild-std=panic_abort,std
 test mt 'mt-no_std' -Zbuild-std=core,alloc --no-default-features
+
+# Shutdown Chromedriver
+kill $pid
 
 # Merge all generated `*.profraw` files.
 rust-profdata merge -sparse coverage-input/*/*.profraw -o coverage-input/coverage.profdata

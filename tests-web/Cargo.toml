@@ -37,7 +37,10 @@ serde_test = { version = "1", optional = true, default-features = false }
 static_assertions = "1"
 wasm-bindgen = { version = "0.2", default-features = false }
 wasm-bindgen-futures = { version = "0.4", default-features = false }
-wasm-bindgen-test = { version = "0.3", default-features = false }
+wasm-bindgen-test = { version = "0.3", default-features = false, features = [
+	"msrv",
+	"unstable-test-coverage",
+] }
 web-sys = { version = "0.3", default-features = false, features = [
 	"CssStyleDeclaration",
 	"Document",

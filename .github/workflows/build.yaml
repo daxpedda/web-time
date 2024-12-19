@@ -36,6 +36,7 @@ jobs:
               description: with Atomics,
               atomics: true,
               component: --component rust-src,
+              cflags: -matomics -mbulk-memory,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
               build-std: true,
             }
@@ -92,7 +93,8 @@ jobs:
           cargo update -p syn --precise 2.0.67
       - name: Build
         env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
+          CFLAGS_wasm32_unknown_unknown: ${{ matrix.rust.cflags }}
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: ${{ matrix.rust.flags }}
         run:
           cargo build ${{ matrix.features.features }} --target ${{ matrix.target.target }}
           $BUILD_STD_COMPONENTS

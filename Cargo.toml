@@ -29,9 +29,6 @@ wasm-bindgen = { version = "0.2.98", default-features = false }
 [build-dependencies]
 rustversion = { version = "1.0.0", optional = true }
 
-[dev-dependencies]
-wasm-bindgen-test = { version = "0.3", default-features = false }
-
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies]
 tests-native = { path = "tests-native", default-features = false, features = ["run"] }
 
@@ -39,10 +36,15 @@ tests-native = { path = "tests-native", default-features = false, features = ["r
 getrandom = { version = "0.2", features = ["js"] }
 rand = { version = "0.8", default-features = false, features = ["getrandom", "std_rng"] }
 tests-web = { path = "tests-web", default-features = false, features = ["run"] }
+wasm-bindgen-test = { version = "0.3", default-features = false, features = [
+	"msrv",
+	"unstable-test-coverage",
+] }
 
 [patch.crates-io]
 getrandom = { git = "https://github.com/daxpedda/getrandom", branch = "web-time" }
 js-sys = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
+minicov = { git = "https://github.com/daxpedda/minicov", branch = "web-time" }
 serde_test = { git = "https://github.com/daxpedda/test", branch = "no_std" }
 wasm-bindgen = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
 wasm-bindgen-futures = { git = "https://github.com/daxpedda/wasm-bindgen", branch = "web-time" }
@@ -90,9 +92,9 @@ single_use_lifetimes = "warn"
 trivial_casts = "warn"
 trivial_numeric_casts = "warn"
 unexpected_cfgs = { level = "warn", check-cfg = [
-	'cfg(wasm_bindgen_unstable_test_coverage)',
 	'cfg(v1_77)',
 	'cfg(nightly)',
+	'cfg(web_time_test_coverage)',
 ] }
 unnameable_types = "warn"
 unreachable_pub = "warn"

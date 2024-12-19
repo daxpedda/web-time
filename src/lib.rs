@@ -54,7 +54,7 @@
 //! # #[cfg(target_arch = "wasm32")]
 //! # use tests_web as _;
 //! #
-//! # #[wasm_bindgen_test::wasm_bindgen_test]
+//! # #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test::wasm_bindgen_test)]
 //! # fn main() {
 //! let now = Instant::now();
 //! let time = SystemTime::now();
@@ -167,7 +167,6 @@
 #![cfg_attr(all(target_arch = "wasm32", not(feature = "std")), no_std)]
 #![cfg_attr(all(test, target_arch = "wasm32"), no_main)]
 #![cfg_attr(all(doc, docsrs), feature(doc_cfg))]
-#![cfg_attr(wasm_bindgen_unstable_test_coverage, feature(coverage_attribute))]
 #![cfg_attr(all(not(feature = "std"), nightly), feature(asm_experimental_arch))]
 
 #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]

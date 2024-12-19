@@ -34,6 +34,7 @@ jobs:
               description: with Atomics,
               atomics: true,
               component: ",rust-src",
+              cflags: -matomics -mbulk-memory,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
               build-std: true,
             }
@@ -80,7 +81,8 @@ jobs:
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Run Clippy
         env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
+          CFLAGS_wasm32_unknown_unknown: ${{ matrix.rust.cflags }}
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: ${{ matrix.rust.flags }}
         run:
           cargo clippy --workspace --all-targets ${{ matrix.features.features }} --target ${{
           matrix.target.target }} $BUILD_STD_COMPONENTS -- -D warnings
@@ -106,6 +108,7 @@ jobs:
               description: with Atomics,
               atomics: true,
               component: --component rust-src,
+              cflags: -matomics -mbulk-memory,
               flags: "-Ctarget-feature=+atomics,+bulk-memory",
               build-std: true,
             }
@@ -158,7 +161,8 @@ jobs:
         run: echo "BUILD_STD_COMPONENTS=-Zbuild-std=core,alloc" >> $GITHUB_ENV
       - name: Run Rustdoc
         env:
-          RUSTFLAGS: ${{ matrix.rust.flags }}
+          CFLAGS_wasm32_unknown_unknown: ${{ matrix.rust.cflags }}
+          CARGO_TARGET_WASM32_UNKNOWN_UNKNOWN_RUSTFLAGS: ${{ matrix.rust.flags }}
           RUSTDOCFLAGS: -D warnings ${{ matrix.rust.flags }} ${{ matrix.docsrs.flags }}
         run:
           cargo doc --workspace --no-deps --document-private-items --lib --examples ${{
