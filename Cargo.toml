@@ -34,7 +34,7 @@ tests-native = { path = "tests-native", default-features = false, features = ["r
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies]
 getrandom = { version = "0.2", features = ["js"] }
-rand = { version = "0.8", default-features = false, features = ["getrandom", "std_rng"] }
+rand = { version = "0.9", default-features = false, features = ["getrandom", "std_rng"] }
 tests-web = { path = "tests-web", default-features = false, features = ["run"] }
 wasm-bindgen-test = { version = "0.3", default-features = false, features = [
 	"msrv",

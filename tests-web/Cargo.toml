@@ -30,7 +30,7 @@ dlmalloc = "0.2"
 getrandom = { version = "0.2", features = ["js"] }
 js-sys = { version = "0.3", default-features = false }
 libm = "0.2"
-rand = { version = "0.8", default-features = false, features = ["getrandom", "std_rng"] }
+rand = { version = "0.9", default-features = false, features = ["getrandom", "std_rng"] }
 serde-json-core = { version = "0.6", optional = true, default-features = false }
 serde_json = { version = "1", optional = true, default-features = false, features = ["alloc"] }
 serde_test = { version = "1", optional = true, default-features = false }
