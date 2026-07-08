@@ -21,7 +21,7 @@ use super::js::TIME_ORIGIN;
 	doc = "[`std::time::Instant`]: https://doc.rust-lang.org/std/time/struct.Instant.html"
 )]
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub struct Instant(Duration);
+pub struct Instant(pub(crate) Duration);
 
 impl Instant {
 	/// See [`std::time::Instant::now()`].

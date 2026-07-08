@@ -2,9 +2,10 @@
 
 #![allow(clippy::absolute_paths)]
 
+use core::time::Duration;
 use std::time::SystemTime as StdSystemTime;
 
-use crate::SystemTime;
+use crate::{Instant, SystemTime};
 
 #[cfg(all(
 	target_arch = "wasm32",
@@ -77,5 +78,46 @@ impl SystemTimeExt for SystemTime {
 			+ time
 				.duration_since(StdSystemTime::UNIX_EPOCH)
 				.expect("found `SystemTime` earlier than unix epoch")
+	}
+}
+
+/// Web-specific extension to [`web_time::Instant`](crate::Instant).
+pub trait InstantExt {
+	/// Create a [`web_time::Instant`](crate::Instant) from a [`Duration`]
+	/// representing the monotonic time elapsed since an arbitrary, fixed
+	/// origin.
+	///
+	/// # Note
+	///
+	/// The resulting [`Instant`](crate::Instant) is only meaningful relative to
+	/// other [`Instant`](crate::Instant)s that share the same origin (whether
+	/// obtained via [`Instant::now()`](crate::Instant::now) or this method).
+	/// Mixing timestamps from different origins will yield nonsensical
+	/// [`Duration`]s.
+	///
+	/// [`Performance.now()`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/now
+	/// [`Performance.timeOrigin`]: https://developer.mozilla.org/en-US/docs/Web/API/Performance/timeOrigin
+	#[must_use]
+	fn from_duration(duration: Duration) -> Self;
+
+	/// Returns the [`Duration`] backing this [`Instant`](crate::Instant), i.e.
+	/// the monotonic time elapsed since the origin it was created from.
+	///
+	/// # Note
+	///
+	/// Like [`InstantExt::from_duration`], the returned [`Duration`] is only
+	/// meaningful relative to other [`Instant`](crate::Instant)s sharing the
+	/// same origin.
+	#[must_use]
+	fn as_duration(&self) -> Duration;
+}
+
+impl InstantExt for Instant {
+	fn from_duration(duration: Duration) -> Self {
+		Self(duration)
+	}
+
+	fn as_duration(&self) -> Duration {
+		self.0
 	}
 }
